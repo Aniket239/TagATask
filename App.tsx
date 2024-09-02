@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import Navbar from './components/Navbar';
-import Home from './components/Home/Home';
+import Home from './pages/Home';
 import { View } from 'react-native';
 const App = () => {
   return (
