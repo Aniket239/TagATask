@@ -1,34 +1,60 @@
 import React from "react";
-import { Pressable, StyleSheet, Text, View } from "react-native";
+import { Pressable, StyleSheet, Text, TextInput, View } from "react-native";
 import NewTask from "./NewTask";
 
 interface Task {
     title: string;
-    date: Date;  // Use Date object for consistency
+    date: Date | null; 
     tag: string[];
     recurrence: string | null;
     comment: string;
+    fileUri?: string; 
+    filenames: string[];  
+    fileDatas: { name: string, data: string }[]; 
 }
 
 const ToDo = () => {
     const [tasks, setTasks] = React.useState<Task[]>([]);
     const [isModalOpen, setIsModalOpen] = React.useState<boolean>(false);
     const [selectedTask, setSelectedTask] = React.useState<Task | null>(null);
+    const [taskName, setTaskName] = React.useState('');
 
     const openModal = (task?: Task) => {
-        setSelectedTask(task || null);
+        setSelectedTask(task || null); 
         setIsModalOpen(true);
     };
 
     const closeModal = () => {
         setIsModalOpen(false);
+        setSelectedTask(null); 
     };
 
     const saveTask = (task: Task) => {
         if (selectedTask) {
+            // Update existing task
             setTasks(tasks.map(t => (t === selectedTask ? task : t)));
         } else {
+            // Add new task
             setTasks([...tasks, task]);
+        }
+        setTaskName(''); 
+        closeModal(); 
+    };
+
+    const handleTaskCreation = () => {
+        if (taskName.trim()) {
+            const newTask: Task = {
+                title: taskName.trim(),
+                date: null, 
+                tag: [],    
+                recurrence: null, 
+                comment: '', 
+                fileUri: undefined,
+                filenames: [],  
+                fileDatas: []   
+            };
+            setTasks([...tasks, newTask]); 
+            setTaskName(''); 
         }
     };
 
@@ -36,20 +62,31 @@ const ToDo = () => {
         <View style={styles.toDoContainer}>
             <Text style={styles.headerText}>To-Do</Text>
             {tasks.map((task, index) => (
-                task.title ? (
+                task.title && (
                     <Pressable key={index} onPress={() => openModal(task)} style={styles.task}>
                         <Text style={styles.taskText}>{task.title}</Text>
+                        {task.date && (
+                            <Text style={styles.taskText}>{task.date.toLocaleDateString()}</Text>
+                        )}
                     </Pressable>
-                ) : null
+                )
             ))}
-            <Pressable onPress={() => openModal()} style={styles.task}>
-                <Text style={styles.taskText}>+ Add New Task</Text>
-            </Pressable>
+            <TextInput
+                editable
+                multiline={false}
+                numberOfLines={1}
+                value={taskName}
+                onChangeText={setTaskName}
+                onBlur={handleTaskCreation} 
+                placeholder="+ Add New Task"
+                placeholderTextColor="black"
+                style={styles.taskInput}
+            />
             <NewTask
                 isOpenTask={isModalOpen}
                 onClose={closeModal}
                 onSave={saveTask}
-                taskData={selectedTask}
+                taskData={selectedTask} 
             />
         </View>
     );
@@ -59,35 +96,35 @@ export default ToDo;
 
 const styles = StyleSheet.create({
     toDoContainer: {
-        backgroundColor: "#f0f0f0", // Soft light gray for better contrast
+        backgroundColor: "#f0f0f0",
         width: "90%",
         height: "97%",
         justifyContent: "flex-start",
         alignItems: "center",
-        borderRadius: 15, // Slightly more rounded corners for a modern look
-        paddingTop: 25, // Extra padding for a more spacious layout
+        borderRadius: 15,
+        paddingTop: 25,
         paddingHorizontal: 20,
-        shadowColor: "#000", // Add shadow for a subtle 3D effect
+        shadowColor: "#000",
         shadowOffset: { width: 0, height: 2 },
         shadowOpacity: 0.1,
         shadowRadius: 4,
-        elevation: 3, // Elevation for Android shadow
+        elevation: 3,
     },
     headerText: {
-        color: "#333", // Darker gray for better readability
-        fontSize: 26, // Slightly larger font for emphasis
+        color: "#333",
+        fontSize: 26,
         marginBottom: 25,
         fontWeight: "bold",
-        textAlign: "left", // Center align the header text
+        textAlign: "left",
         width: "100%"
     },
     task: {
-        width: "100%", // Full width for better alignment
-        paddingVertical: 15, // Vertical padding for touchable area
-        paddingHorizontal: 20, // Horizontal padding for content spacing
-        backgroundColor: "#ffffff", // White background for task item
-        borderRadius: 10, // Rounded corners for task item
-        marginBottom: 15, // Spacing between tasks
+        width: "100%",
+        paddingVertical: 15,
+        paddingHorizontal: 20,
+        backgroundColor: "#ffffff",
+        borderRadius: 10,
+        marginBottom: 15,
         shadowColor: "#000",
         shadowOffset: { width: 0, height: 1 },
         shadowOpacity: 0.1,
@@ -98,7 +135,22 @@ const styles = StyleSheet.create({
         justifyContent: "space-between"
     },
     taskText: {
-        fontSize: 18, // Slightly larger task title font
-        color: "black", // Darker text for better contrast
+        fontSize: 18,
+        color: "black",
+    },
+    taskInput: {
+        width: "100%",
+        paddingVertical: 15,
+        paddingHorizontal: 20,
+        backgroundColor: "#ffffff",
+        borderRadius: 10,
+        marginBottom: 15,
+        shadowColor: "#000",
+        shadowOffset: { width: 0, height: 1 },
+        shadowOpacity: 0.1,
+        shadowRadius: 2,
+        elevation: 2,
+        color: "black",
+        fontSize: 18,
     },
 });
