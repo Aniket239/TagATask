@@ -1,0 +1,58 @@
+    startDate: Date;  // Use Date object for consistency
+
+
+
+    const [startDate, setStartDate] = useState<Date>(taskData?.startDate ? new Date(taskData.startDate) : defaultDate);   
+    const [isStartDatePickerOpen, setIsStartDatePickerOpen] = useState(false);
+    const [isStartTimePickerOpen, setIsStartTimePickerOpen] = useState(false);
+
+                setStartDate(new Date(taskData.startDate));
+        setStartDate(new Date("2024-01-01"));
+            startDate: startDate, // Use startDate or dueDate as appropriate
+
+
+<View style={styles.startDateTimeContainer}>
+                                <Text style={styles.startDateText}>Start Date... </Text>
+                                <TouchableOpacity
+                                    style={styles.dateTouchable}
+                                    onPress={() => setIsStartDatePickerOpen(true)}>
+                                    <MaterialIcon name="calendar-month" size={30} color={"#5f6368"} />
+                                    <Text style={styles.dateTimeText}>{startDate.toLocaleDateString()}</Text>
+                                </TouchableOpacity>
+
+                                <TouchableOpacity
+                                    style={styles.dateTouchable}
+                                    onPress={() => setIsStartTimePickerOpen(true)}>
+                                    <MaterialIcon name="schedule" size={30} color={"#5f6368"} />
+                                    <Text style={styles.dateTimeText}>{startDate.toLocaleTimeString()}</Text>
+                                </TouchableOpacity>
+
+                                {/* Start Date Picker */}
+                                <DatePicker
+                                    modal
+                                    theme="light"
+                                    mode="date"
+                                    minimumDate={new Date("2024-01-01")}
+                                    open={isStartDatePickerOpen}
+                                    date={startDate}
+                                    onConfirm={(date) => {
+                                        setIsStartDatePickerOpen(false);
+                                        setStartDate(date);
+                                    }}
+                                    onCancel={() => setIsStartDatePickerOpen(false)}
+                                />
+
+                                {/* Start Time Picker */}
+                                <DatePicker
+                                    modal
+                                    theme="light"
+                                    mode="time"
+                                    open={isStartTimePickerOpen}
+                                    date={startDate}
+                                    onConfirm={(time) => {
+                                        setIsStartTimePickerOpen(false);
+                                        setStartDate(time);
+                                    }}
+                                    onCancel={() => setIsStartTimePickerOpen(false)}
+                                />
+                            </View>

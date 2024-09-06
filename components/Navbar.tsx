@@ -12,7 +12,7 @@ const Navbar = () => {
             <TouchableOpacity onPress={openSideNav} style={styles.iconButton}>
                 <MaterialIcon name="menu" size={30} color="black" />
             </TouchableOpacity>
-            <Text style={styles.innerText}>Logo</Text>
+            <Text style={styles.innerText}>Tag A Task</Text>
         </View>
     );
 };

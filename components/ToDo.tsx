@@ -4,13 +4,14 @@ import NewTask from "./NewTask";
 
 interface Task {
     title: string;
-    date: Date | null; 
+    dueDate: Date ;  // Use Date object for consistency
     tag: string[];
     recurrence: string | null;
     comment: string;
-    fileUri?: string; 
-    filenames: string[];  
-    fileDatas: { name: string, data: string }[]; 
+    fileUri?: string; // Add optional file URI
+    filenames: string[];  // Array of file names
+    fileDatas: { name: string, data: string }[];  // Array of objects containing file name and base64 data
+    dateSet: boolean;
 }
 
 const ToDo = () => {
@@ -45,7 +46,8 @@ const ToDo = () => {
         if (taskName.trim()) {
             const newTask: Task = {
                 title: taskName.trim(),
-                date: null, 
+                dueDate: new Date(), 
+                dateSet: false,
                 tag: [],    
                 recurrence: null, 
                 comment: '', 
@@ -65,8 +67,8 @@ const ToDo = () => {
                 task.title && (
                     <Pressable key={index} onPress={() => openModal(task)} style={styles.task}>
                         <Text style={styles.taskText}>{task.title}</Text>
-                        {task.date && (
-                            <Text style={styles.taskText}>{task.date.toLocaleDateString()}</Text>
+                        {task.dateSet && (
+                            <Text style={styles.taskText}>{task.dueDate.toLocaleDateString()}</Text>
                         )}
                     </Pressable>
                 )

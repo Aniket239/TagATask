@@ -9,7 +9,8 @@ import RNFS from 'react-native-fs';
 
 interface Task {
     title: string;
-    date: Date;  // Use Date object for consistency
+    dueDate: Date;  // Use Date object for consistency
+    dateSet: boolean;
     tag: string[];
     recurrence: string | null;
     comment: string;
@@ -33,25 +34,28 @@ const recurrenceData = [
 ];
 
 const NewTask = ({ isOpenTask, onClose, onSave, taskData }: { isOpenTask: boolean; onClose: () => void; onSave: (task: Task) => void; taskData?: Task | null }) => {
+    const defaultDate = new Date(); // This will set the default date as today's date
     const [title, setTitle] = useState(taskData?.title || "");
-    const [date, setDate] = useState<Date>(taskData?.date ? new Date(taskData.date) : new Date());
+    const [dueDate, setDueDate] = useState<Date>(taskData?.dueDate ? new Date(taskData.dueDate) : defaultDate);
+    const [dateSet, setDateSet] = useState<boolean>(taskData?.dateSet || false);;
     const [tag, setTag] = useState<string[]>(taskData?.tag || []);
     const [recurrence, setRecurrence] = useState<string | null>(taskData?.recurrence || null);
     const [comment, setComment] = useState(taskData?.comment || "");
     const [fileUri, setFileUri] = useState<string | undefined>(taskData?.fileUri);
     const [isFocus, setIsFocus] = useState(false);
     const [titleError, setTitleError] = useState(false);
-    const [pickedFiles, setPickedFiles] = useState<string[]>(taskData?.filenames || []); // Array to store the file names
-    const [fileDataArray, setFileDataArray] = useState<{ name: string, data: string }[]>(taskData?.fileDatas || []); // Array to store base64 data
-    const [isFileModalOpen, setIsFileModalOpen] = useState<boolean>(false); // State for file modal
-    const [isDatePickerOpen, setIsDatePickerOpen] = useState(false); // Date picker state
-    const [isTimePickerOpen, setIsTimePickerOpen] = useState(false); // Time picker state
-    const [isTaskMenuOpen, setTaskMenuOpen] = useState(false); // State for task menu
+    const [pickedFiles, setPickedFiles] = useState<string[]>(taskData?.filenames || []);
+    const [fileDataArray, setFileDataArray] = useState<{ name: string, data: string }[]>(taskData?.fileDatas || []);
+    const [isFileModalOpen, setIsFileModalOpen] = useState<boolean>(false);
+    const [isDueDatePickerOpen, setIsDueDatePickerOpen] = useState(false);
+    const [isDueTimePickerOpen, setIsDueTimePickerOpen] = useState(false);
+    const [isTaskMenuOpen, setTaskMenuOpen] = useState(false);
 
     useEffect(() => {
         if (taskData) {
             setTitle(taskData.title);
-            setDate(new Date(taskData.date));
+            setDueDate(new Date(taskData.dueDate));
+            setDateSet(taskData.dateSet);
             setTag(taskData.tag);
             setRecurrence(taskData.recurrence);
             setComment(taskData.comment);
@@ -63,7 +67,7 @@ const NewTask = ({ isOpenTask, onClose, onSave, taskData }: { isOpenTask: boolea
 
     const resetForm = () => {
         setTitle("");
-        setDate(new Date());
+        setDueDate(new Date("2024-01-01"));
         setTag([]);
         setRecurrence(null);
         setComment("");
@@ -74,7 +78,7 @@ const NewTask = ({ isOpenTask, onClose, onSave, taskData }: { isOpenTask: boolea
     };
 
     const handleDelete = () => {
-        const task = { title: "", date: new Date(), tag: [], recurrence: null, comment: "", fileUri: "", filenames: [], fileDatas: [] };
+        const task = { title: "", dueDate: new Date(), tag: [], recurrence: null, comment: "", fileUri: "", filenames: [], fileDatas: [], dateSet: false };
         onSave(task);
         resetForm();
         onClose();
@@ -87,25 +91,61 @@ const NewTask = ({ isOpenTask, onClose, onSave, taskData }: { isOpenTask: boolea
             return;
         }
 
-        const task: Task = { title, date, tag, recurrence, comment, fileUri, filenames: pickedFiles, fileDatas: fileDataArray };
+        // Correctly using startDate and dueDate instead of the non-existent 'date'
+        const task: Task = {
+            title,
+            dueDate: dueDate, // Use startDate or dueDate as appropriate
+            dateSet: dateSet,
+            tag,
+            recurrence,
+            comment,
+            fileUri,
+            filenames: pickedFiles,
+            fileDatas: fileDataArray
+        };
+        console.log('====================================');
+        console.log(dateSet);
+        console.log('====================================');
+
         onSave(task);
         resetForm();
         onClose();
     };
 
 
+
     const handleCameraLaunch = async (isCamera: boolean) => {
         const options = {
             mediaType: isCamera ? 'photo' : 'video',
         };
-
         try {
             const response = await launchCamera(options);
-            console.log('pickedFile', response);
+            if (response.didCancel) {
+                console.log('User cancelled camera launch');
+                return;
+            }
+            if (response.errorCode) {
+                console.error('Camera error:', response.errorMessage);
+                return;
+            }
+            if (response.assets && response.assets.length > 0) {
+                const newCapturedFiles = response.assets.map(asset => ({
+                    uri: asset.uri || '',
+                    name: asset.fileName || `captured_${Date.now()}.${isCamera ? 'jpg' : 'mp4'}`,
+                }));
+                const newFileNames: string[] = newCapturedFiles.map(file => file.name);
+                setPickedFiles(prevFiles => [...prevFiles, ...newFileNames]);
+                const newFileDataArray = await Promise.all(newCapturedFiles.map(async (file) => {
+                    const fileData = await RNFS.readFile(file.uri, 'base64');
+                    return { name: file.name, data: fileData };
+                }));
+                setFileDataArray(prevData => [...prevData, ...newFileDataArray]);
+            }
         } catch (error) {
-            console.error('Error:', error);
+            console.error('Error launching camera:', error);
         }
     };
+
 
     const uploadFileOnPressHandler = async () => {
         try {
@@ -113,25 +153,17 @@ const NewTask = ({ isOpenTask, onClose, onSave, taskData }: { isOpenTask: boolea
                 type: [DocumentPicker.types.allFiles],
                 allowMultiSelection: true,
             });
-
-            // Filter out files with null names to avoid type errors
             const newUniqueFiles = pickedNewFiles.filter(file => file.name !== null && !pickedFiles.includes(file.name!));
-
-            // Map the picked files and ensure names are valid strings
             const newFileNames: string[] = newUniqueFiles.map(file => file.name as string);
-
-            // Append the new file names to the existing array of files
             setPickedFiles(prevFiles => [...prevFiles, ...newFileNames]);
-
-            // Process and store base64 data for each new file
             const newFileDataArray = await Promise.all(newUniqueFiles.map(async (file) => {
                 const fileData = await RNFS.readFile(file.uri, 'base64');
                 return { name: file.name as string, data: fileData };
             }));
-
-            // Append the new file data to the fileDataArray
             setFileDataArray(prevData => [...prevData, ...newFileDataArray]);
-
+            console.log('====================================');
+            console.log(pickedFiles);
+            console.log('====================================');
         } catch (err) {
             if (DocumentPicker.isCancel(err)) {
                 console.log('User canceled the picker', err);
@@ -191,7 +223,7 @@ const NewTask = ({ isOpenTask, onClose, onSave, taskData }: { isOpenTask: boolea
                     <View style={styles.inputContainer}>
                         {titleError && <Text style={styles.errorText}>Task name is required</Text>}
                         <TextInput
-                            style={[styles.textInput, titleError && styles.errorInput]}
+                            style={[styles.taskName, titleError && styles.errorInput]}
                             value={title}
                             onChangeText={(text) => {
                                 setTitle(text);
@@ -202,65 +234,122 @@ const NewTask = ({ isOpenTask, onClose, onSave, taskData }: { isOpenTask: boolea
                             placeholderTextColor={titleError ? "#ff6666" : "#666"}
                         />
                         <View style={styles.dateTimeContainer}>
-                            <TouchableOpacity
-                                style={styles.dateTouchable}
-                                onPress={() => setIsDatePickerOpen(true)}>
-                                <MaterialIcon name="calendar-month" size={30} color={"#5f6368"} />
-                                <Text style={styles.dateTimeText}>{date.toLocaleDateString()}</Text>
-                            </TouchableOpacity>
+                            <View style={styles.dueDateTimeContainer}>
+                                <Text style={styles.dueDateText}>Due Date... </Text>
+                                <TouchableOpacity
+                                    style={styles.dateTouchable}
+                                    onPress={() => setIsDueDatePickerOpen(true)}>
+                                    <MaterialIcon name="calendar-month" size={30} color={"#5f6368"} />
+                                    <Text style={styles.dateTimeText}>{dateSet ? dueDate.toLocaleDateString() : ""}</Text>
+                                </TouchableOpacity>
 
-                            <TouchableOpacity
-                                style={styles.dateTouchable}
-                                onPress={() => setIsTimePickerOpen(true)}>
-                                <MaterialIcon name="schedule" size={30} color={"#5f6368"} />
-                                <Text style={styles.dateTimeText}>{date.toLocaleTimeString()}</Text>
-                            </TouchableOpacity>
+                                <TouchableOpacity
+                                    style={styles.dateTouchable}
+                                    onPress={() => setIsDueTimePickerOpen(true)}>
+                                    <MaterialIcon name="schedule" size={30} color={"#5f6368"} />
+                                    <Text style={styles.dateTimeText}>{dateSet ? dueDate.toLocaleTimeString() : ""}</Text>
+                                </TouchableOpacity>
 
-                            <DatePicker
-                                modal
-                                theme="light"
-                                mode="date"
-                                open={isDatePickerOpen}
-                                date={date}
-                                onConfirm={(date) => {
-                                    setIsDatePickerOpen(false);
-                                    setDate(date);
-                                }}
-                                onCancel={() => setIsDatePickerOpen(false)}
-                            />
+                                {/* Due Date Picker */}
+                                <DatePicker
+                                    modal
+                                    theme="light"
+                                    mode="date"
+                                    minimumDate={new Date()}  // Set today's date as the minimum
+                                    open={isDueDatePickerOpen}
+                                    date={dueDate}
+                                    onConfirm={(date) => {
+                                        setIsDueDatePickerOpen(false);
+                                        setDueDate(date);
+                                        setDateSet(true);
+                                    }}
+                                    onCancel={() => {
+                                        setIsDueDatePickerOpen(false);
+                                    }
+                                    }
+                                />
 
-                            <DatePicker
-                                modal
-                                theme="light"
-                                mode="time"
-                                open={isTimePickerOpen}
-                                date={date}
-                                onConfirm={(time) => {
-                                    setIsTimePickerOpen(false);
-                                    setDate(time);
-                                }}
-                                onCancel={() => setIsTimePickerOpen(false)}
+                                {/* Due Time Picker */}
+                                <DatePicker
+                                    modal
+                                    theme="light"
+                                    mode="time"
+                                    open={isDueTimePickerOpen}
+                                    date={dueDate}
+                                    onConfirm={(time) => {
+                                        setIsDueTimePickerOpen(false);
+                                        setDueDate(time);
+                                        setDateSet(true);
+                                    }}
+                                    onCancel={() => { setIsDueTimePickerOpen(false)                                     
+                                    }}
+                                />
+                                {dateSet?<Pressable onPress={()=>setDateSet(false)}>
+                                    <MaterialIcon name="restart-alt" size={30} color={'#5f6368'} />
+                                </Pressable>:<></>}
+                                
+                            </View>
+                        </View>
+                        <View style={styles.labelTitle}>
+                            <View style={styles.labelIcon}>
+                                <MaterialIcon name="label-outline" size={30} color={"#5f6368"} />
+                            </View>
+                            <View style={styles.label}>
+                                <MultiSelect
+                                    style={[styles.dropdown, isFocus && { borderColor: 'black' }]}
+                                    placeholderStyle={styles.placeholderStyle}
+                                    selectedTextStyle={styles.selectedTextStyle}
+                                    inputSearchStyle={styles.inputSearchStyle}
+                                    data={data}
+                                    search
+                                    // maxHeight={300}
+                                    labelField="label"
+                                    valueField="value"
+                                    placeholder={!isFocus ? 'Label' : 'Select Label'}
+                                    searchPlaceholder="Search..."
+                                    value={tag}
+                                    onFocus={() => setIsFocus(true)}
+                                    onBlur={() => setIsFocus(false)}
+                                    onChange={item => {
+                                        setTag(item);
+                                        setIsFocus(false);
+                                    }}
+                                    disable={!isOpenTask}
+                                    itemContainerStyle={styles.labelDropdownItemContainer}
+                                    itemTextStyle={styles.labelDropdownItemText}
+                                    activeColor="#cceeff"
+                                />
+                            </View>
+                        </View>
+                        <View style={styles.comment}>
+                            <MaterialIcon name="chat" size={30} color={"#5f6368"} />
+                            <TextInput
+                                style={[styles.commentText, { height: 60 }]}
+                                value={comment}
+                                onChangeText={setComment}
+                                editable={isOpenTask}
+                                placeholder="Comment"
+                                placeholderTextColor="#666"
+                                multiline={true}
                             />
                         </View>
-                        <View style= {styles.label}>  
-                            <MaterialIcon name="label-outline" size={30} color={"#5f6368"}/>
-                            <MultiSelect
+                        <View style={styles.reoccurenceTitle}>
+                            <MaterialIcon name="all-inclusive" size={30} color={"#5f6368"} />
+                            <Dropdown
                                 style={[styles.dropdown, isFocus && { borderColor: 'black' }]}
                                 placeholderStyle={styles.placeholderStyle}
                                 selectedTextStyle={styles.selectedTextStyle}
                                 inputSearchStyle={styles.inputSearchStyle}
-                                data={data}
-                                search
+                                data={recurrenceData}
                                 maxHeight={300}
                                 labelField="label"
                                 valueField="value"
-                                placeholder={!isFocus ? 'Label' : '...'}
-                                searchPlaceholder="Search..."
-                                value={tag}
+                                placeholder={!isFocus ? 'Recurrence' : '...'}
+                                value={recurrence}
                                 onFocus={() => setIsFocus(true)}
                                 onBlur={() => setIsFocus(false)}
                                 onChange={item => {
-                                    setTag(item);
+                                    setRecurrence(item.value);
                                     setIsFocus(false);
                                 }}
                                 disable={!isOpenTask}
@@ -269,42 +358,11 @@ const NewTask = ({ isOpenTask, onClose, onSave, taskData }: { isOpenTask: boolea
                                 activeColor="#cceeff"
                             />
                         </View>
-                        <TextInput
-                            style={[styles.textInput, { height: 60 }]}
-                            value={comment}
-                            onChangeText={setComment}
-                            editable={isOpenTask}
-                            placeholder="Comment"
-                            placeholderTextColor="#666"
-                            multiline={true}
-                        />
-                        <Dropdown
-                            style={[styles.dropdown, isFocus && { borderColor: 'black' }]}
-                            placeholderStyle={styles.placeholderStyle}
-                            selectedTextStyle={styles.selectedTextStyle}
-                            inputSearchStyle={styles.inputSearchStyle}
-                            data={recurrenceData}
-                            maxHeight={300}
-                            labelField="label"
-                            valueField="value"
-                            placeholder={!isFocus ? 'Recurrence' : '...'}
-                            value={recurrence}
-                            onFocus={() => setIsFocus(true)}
-                            onBlur={() => setIsFocus(false)}
-                            onChange={item => {
-                                setRecurrence(item.value);
-                                setIsFocus(false);
-                            }}
-                            disable={!isOpenTask}
-                            itemContainerStyle={styles.labelDropdownItemContainer}
-                            itemTextStyle={styles.labelDropdownItemText}
-                            activeColor="#cceeff"
-                        />
                         <View style={styles.attachmentContainer}>
                             <Pressable onPress={() => setIsFileModalOpen(true)} >
                                 <View style={styles.attachmentButton}>
                                     <View style={styles.attachmentContent}>
-                                        <MaterialIcon name="attach-file" size={25} color="#5f6368" />
+                                        <MaterialIcon name="attach-file" size={30} color="#5f6368" />
                                         <Text style={styles.attachmentTitle}>Attachments</Text>
                                     </View>
                                     <MaterialIcon name="add" size={35} color={"#5f6368"} />
@@ -314,7 +372,7 @@ const NewTask = ({ isOpenTask, onClose, onSave, taskData }: { isOpenTask: boolea
                                 <View key={index} style={styles.fileItem}>
                                     <Text style={styles.attachmentText}>{fileName}</Text>
                                     <Pressable onPress={() => removeFile(fileName)}>
-                                        <MaterialIcon name="delete" size={20} color="#F7454A" />
+                                        <MaterialIcon name="close" size={30} color="#5f6368" />
                                     </Pressable>
                                 </View>
                             ))}
@@ -358,18 +416,18 @@ const styles = StyleSheet.create({
         alignItems: "center",
         width: "100%",
         height: "100%",
-        paddingBottom: 23
+        paddingBottom: "2%"
     },
     menuOverlay: {
         flex: 1,
         justifyContent: 'flex-start',
         alignItems: 'flex-end', // Align the menu on the right
-        paddingRight: 20,
+        paddingRight: "2%",
         paddingTop: "15%"
     },
     menuContainer: {
         backgroundColor: "#fff",
-        padding: 10,
+        padding: "2%",
         borderRadius: 8,
         elevation: 5, // For shadow effect
         width: 150,
@@ -387,9 +445,13 @@ const styles = StyleSheet.create({
     inputContainer: {
         width: "100%",
         height: "95%",
-        paddingTop: 20, // Padding for the content within the modal
-        paddingBottom: 20, // Padding for the content within the modal
         alignSelf: "center", // Center the content horizontally
+    },
+    taskName: {
+        paddingLeft: "3%",
+        color: "black",
+        fontSize: 25,
+        marginBottom: "1.5%",
     },
     taskUpdate: {
         width: "100%",
@@ -399,27 +461,48 @@ const styles = StyleSheet.create({
         paddingBottom: 13,
         backgroundColor: "lightgrey"
     },
-    textInput: {
-        color: "#333",
-        borderWidth: 1,
-        paddingVertical: 12,
-        paddingHorizontal: 18,
-        marginBottom: 20,
-        backgroundColor: "#fff",
-        fontSize: 18,
-        borderColor: '#ccc',
-    },
+
     dateTimeContainer: {
-        flexDirection: 'row',
+        flexDirection: 'column',
         justifyContent: 'flex-start',
         alignItems: "center",
-        marginBottom: 20,
+        marginBottom: "1.5%",
         width: "100%",
         borderColor: '#ccc', // Apply border color to TouchableOpacity
         borderWidth: 1, // Apply border width
-        padding: 10, // Add padding to make it visually appealing
-        paddingLeft: 17,
         marginRight: 20, // Add space between Date and Time
+    },
+    startDateTimeContainer: {
+        flexDirection: 'row',
+        justifyContent: 'flex-start',
+        alignItems: "center",
+        width: "100%",
+        borderBottomWidth: 1,
+        padding: 10, // Add padding to make it visually appealing
+        borderBottomColor: "#ccc"
+    },
+    dueDateTimeContainer: {
+        flexDirection: 'row',
+        justifyContent: 'flex-start',
+        alignItems: "center",
+        width: "100%",
+        padding: 10, // Add padding to make it visually appealing
+    },
+    startDateText: {
+        fontSize: 18,
+        paddingLeft: "1%",
+        color: "black",
+    },
+    dueDateText: {
+        fontSize: 18,
+        paddingLeft: "1%",
+        paddingRight: "0.5%",
+        color: "black",
+    },
+    timeText: {
+        fontSize: 18,
+        paddingLeft: "1%",
+        color: "black",
     },
     dateTouchable: {
         marginRight: 20, // Add space between Date and Time
@@ -429,56 +512,93 @@ const styles = StyleSheet.create({
     },
     dateTimeText: {
         fontSize: 18,
-        color: "#333",
+        color: "black",
         marginLeft: 5
+    },
+    labelTitle: {
+        flexDirection: "row", // Arrange the label and icon in a row
+        justifyContent: "flex-start",
+        alignItems: "flex-start",
+        borderWidth: 1,
+        borderColor: '#ccc',
+        marginBottom: "1.5%",
+        paddingLeft: "2%"
+    },
+    labelIcon: {
+        marginTop: "2%"
+    },
+    label: {
+        flexDirection: "column", // Arrange the label and icon in a row
+        width: "100%",
     },
     dropdown: {
         height: 50,
-        borderColor: '#ccc',
-        borderWidth: 1,
         paddingHorizontal: 15,
-        marginBottom: 20,
         backgroundColor: "#fff",
-        color: "#333",
-    },
-    placeholderStyle: {
-        fontSize: 16,
-        color: "#666",
-    },
-    selectedTextStyle: {
-        fontSize: 16,
-        color: "#333",
-    },
-    inputSearchStyle: {
-        height: 40,
-        fontSize: 16,
-        color: "#333",
-        backgroundColor: "#f9f9f9",
-        paddingHorizontal: 10,
-    },
-    label:{
-        flexDirection: "row",
-        justifyContent: "flex-start",
-        alignItems: "center"
+        color: "black",
+        width: "94%",
+        flexDirection: "column",
     },
     labelDropdownItemContainer: {
         backgroundColor: "#fafafa",
         paddingVertical: 10,
         paddingHorizontal: 15,
         alignItems: "center",
-        width: "100%"
+        width: "100%",
     },
     labelDropdownItemText: {
-        color: "#333",
+        color: "black",
         fontSize: 16,
-        width: "100%"
+        width: "100%",
+    },
+    placeholderStyle: {
+        fontSize: 18,
+        color: "#666",
+    },
+    selectedTextStyle: {
+        fontSize: 18,
+        color: "black",
+        flexDirection: "column"
+    },
+    inputSearchStyle: {
+        height: 40,
+        fontSize: 16,
+        color: "black",
+        backgroundColor: "#f9f9f9",
+        paddingHorizontal: 10,
     },
     selectedItemContainer: {
         backgroundColor: "#e0f7fa",
     },
+    comment: {
+        color: "black",
+        borderWidth: 1,
+        paddingHorizontal: "2%",
+        marginBottom: "1.5%",
+        backgroundColor: "#fff",
+        borderColor: '#ccc',
+        flexDirection: "row",
+        justifyContent: "flex-start",
+        alignItems: "center"
+    },
+    commentText: {
+        fontSize: 18,
+        paddingLeft: "2%",
+        color: "black",
+        width: "95%",
+    },
+    reoccurenceTitle: {
+        flexDirection: "row", // Arrange the label and icon in a row
+        justifyContent: "flex-start",
+        alignItems: "center",
+        borderWidth: 1,
+        borderColor: '#ccc',
+        marginBottom: "1.5%",
+        paddingLeft: "2%"
+    },
     attachmentContainer: {
         flexDirection: 'column', // Arrange items in a row
-        backgroundColor: '#f9f9f9', // Background color for the button
+        backgroundColor: '#fff', // Background color for the button
         marginBottom: 20,
         borderWidth: 1, // Optional: Add border
         borderColor: '#ccc',
@@ -489,7 +609,7 @@ const styles = StyleSheet.create({
         flexDirection: 'row', // Arrange items in a row
         justifyContent: 'space-between', // Space between left and right content
         alignItems: 'center', // Align items vertically in the center
-        backgroundColor: '#f9f9f9', // Background color for the button
+        backgroundColor: '#fff', // Background color for the button
     },
     attachmentContent: {
         flexDirection: 'row', // Arrange the icon and text in a row
@@ -498,20 +618,21 @@ const styles = StyleSheet.create({
     attachmentTitle: {
         fontSize: 18, // Font size for the text
         marginLeft: 5, // Add space between icon and text
-        color: "#333", // Text color
+        color: "black", // Text color
     },
     attachmentText: {
         fontSize: 18, // Font size for the text
         marginLeft: 7, // Add space between icon and text
-        color: "#333", // Text color
-        flexDirection: "column"
+        color: "black", // Text color
+        flexDirection: "column",
+        maxWidth: "80%"
     },
     fileItem: {
         flexDirection: 'row',
         justifyContent: 'space-between',
         alignItems: 'center',
         marginBottom: 10,
-        paddingRight: 7,
+        paddingRight: 5,
         marginTop: 10,
     },
     modalOverlay: {
@@ -539,7 +660,7 @@ const styles = StyleSheet.create({
     },
     pressableText: {
         marginLeft: 10,
-        fontSize: 20,
+        fontSize: 18,
         color: "black",
         fontWeight: "bold",
     },
