@@ -292,7 +292,7 @@ const NewTask = ({ isOpenTask, onClose, onSave, taskData }: { isOpenTask: boolea
                         </View>
                         <View style={styles.labelTitle}>
                             <View style={styles.labelIcon}>
-                                <MaterialIcon name="label-outline" size={30} color={"#5f6368"} />
+                                <MaterialIcon name="label-outline" size={35} color={"#5f6368"} />
                             </View>
                             <View style={styles.label}>
                                 <MultiSelect
@@ -317,7 +317,7 @@ const NewTask = ({ isOpenTask, onClose, onSave, taskData }: { isOpenTask: boolea
                                     disable={!isOpenTask}
                                     itemContainerStyle={styles.labelDropdownItemContainer}
                                     itemTextStyle={styles.labelDropdownItemText}
-                                    activeColor="#cceeff"
+                                    activeColor="lightgrey"
                                 />
                             </View>
                         </View>
@@ -329,15 +329,15 @@ const NewTask = ({ isOpenTask, onClose, onSave, taskData }: { isOpenTask: boolea
                                 onChangeText={setComment}
                                 editable={isOpenTask}
                                 placeholder="Comment"
-                                placeholderTextColor="#666"
+                                placeholderTextColor="black"
                                 multiline={true}
                             />
                         </View>
                         <View style={styles.reoccurenceTitle}>
-                            <MaterialIcon name="all-inclusive" size={30} color={"#5f6368"} />
+                            <MaterialIcon name="all-inclusive" size={28} color={"#5f6368"} />
                             <Dropdown
                                 style={[styles.dropdown, isFocus && { borderColor: 'black' }]}
-                                placeholderStyle={styles.placeholderStyle}
+                                placeholderStyle={styles.reoccurencePlaceholderStyle}
                                 selectedTextStyle={styles.selectedTextStyle}
                                 inputSearchStyle={styles.inputSearchStyle}
                                 data={recurrenceData}
@@ -450,7 +450,7 @@ const styles = StyleSheet.create({
     taskName: {
         paddingLeft: "3%",
         color: "black",
-        fontSize: 25,
+        fontSize: 30,
         marginBottom: "1.5%",
     },
     taskUpdate: {
@@ -487,6 +487,8 @@ const styles = StyleSheet.create({
         alignItems: "center",
         width: "100%",
         padding: 10, // Add padding to make it visually appealing
+        paddingLeft: "3%",
+
     },
     startDateText: {
         fontSize: 18,
@@ -494,7 +496,7 @@ const styles = StyleSheet.create({
         color: "black",
     },
     dueDateText: {
-        fontSize: 18,
+        fontSize: 20,
         paddingLeft: "1%",
         paddingRight: "0.5%",
         color: "black",
@@ -522,7 +524,7 @@ const styles = StyleSheet.create({
         borderWidth: 1,
         borderColor: '#ccc',
         marginBottom: "1.5%",
-        paddingLeft: "2%"
+        paddingLeft: "3%"
     },
     labelIcon: {
         marginTop: "2%"
@@ -533,16 +535,14 @@ const styles = StyleSheet.create({
     },
     dropdown: {
         height: 50,
-        paddingHorizontal: 15,
+        paddingHorizontal: "2%",
         backgroundColor: "#fff",
         color: "black",
-        width: "94%",
+        width: "90%",
         flexDirection: "column",
     },
     labelDropdownItemContainer: {
         backgroundColor: "#fafafa",
-        paddingVertical: 10,
-        paddingHorizontal: 15,
         alignItems: "center",
         width: "100%",
     },
@@ -552,8 +552,13 @@ const styles = StyleSheet.create({
         width: "100%",
     },
     placeholderStyle: {
-        fontSize: 18,
-        color: "#666",
+        fontSize: 20,
+        color: "black",
+    },
+    reoccurencePlaceholderStyle:{
+        fontSize: 20,
+        color: "black",
+        paddingLeft: "1.5%"
     },
     selectedTextStyle: {
         fontSize: 18,
@@ -568,12 +573,12 @@ const styles = StyleSheet.create({
         paddingHorizontal: 10,
     },
     selectedItemContainer: {
-        backgroundColor: "#e0f7fa",
+        backgroundColor: "grey",
     },
     comment: {
         color: "black",
         borderWidth: 1,
-        paddingHorizontal: "2%",
+        paddingLeft: "3%",
         marginBottom: "1.5%",
         backgroundColor: "#fff",
         borderColor: '#ccc',
@@ -582,8 +587,8 @@ const styles = StyleSheet.create({
         alignItems: "center"
     },
     commentText: {
-        fontSize: 18,
-        paddingLeft: "2%",
+        fontSize: 20,
+        paddingLeft: "3%",
         color: "black",
         width: "95%",
     },
@@ -594,7 +599,8 @@ const styles = StyleSheet.create({
         borderWidth: 1,
         borderColor: '#ccc',
         marginBottom: "1.5%",
-        paddingLeft: "2%"
+        paddingLeft: "3%",
+        fontSize: 18, // Font size for the text
     },
     attachmentContainer: {
         flexDirection: 'column', // Arrange items in a row
@@ -603,6 +609,7 @@ const styles = StyleSheet.create({
         borderWidth: 1, // Optional: Add border
         borderColor: '#ccc',
         padding: 10, // Add some padding for touchable area
+        paddingLeft: "3%"
 
     },
     attachmentButton: {
@@ -610,15 +617,17 @@ const styles = StyleSheet.create({
         justifyContent: 'space-between', // Space between left and right content
         alignItems: 'center', // Align items vertically in the center
         backgroundColor: '#fff', // Background color for the button
+        paddingRight: "0.5%"
     },
     attachmentContent: {
         flexDirection: 'row', // Arrange the icon and text in a row
         alignItems: 'center', // Vertically center the content
     },
     attachmentTitle: {
-        fontSize: 18, // Font size for the text
+        fontSize: 20, // Font size for the text
         marginLeft: 5, // Add space between icon and text
         color: "black", // Text color
+        paddingLeft: "1.7%"
     },
     attachmentText: {
         fontSize: 18, // Font size for the text
@@ -662,7 +671,6 @@ const styles = StyleSheet.create({
         marginLeft: 10,
         fontSize: 18,
         color: "black",
-        fontWeight: "bold",
     },
     errorInput: {
         borderColor: "#ff6666", // Red border color to indicate error
@@ -670,6 +678,7 @@ const styles = StyleSheet.create({
     errorText: {
         color: "#ff6666", // Red text color for error message
         marginBottom: 15,
-        marginTop: -15, // Adjust margin to fit nicely under the input field
+        marginTop: -5, // Adjust margin to fit nicely under the input field
+        marginLeft: 10
     }
 });

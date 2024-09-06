@@ -1,10 +1,12 @@
 import React from "react";
 import { Pressable, StyleSheet, Text, TextInput, View } from "react-native";
 import NewTask from "./NewTask";
+import MaterialIcon from 'react-native-vector-icons/MaterialIcons';
+import ToBeApproved from "./ToBeApproved";
 
 interface Task {
     title: string;
-    dueDate: Date ;  // Use Date object for consistency
+    dueDate: Date;  // Use Date object for consistency
     tag: string[];
     recurrence: string | null;
     comment: string;
@@ -21,13 +23,13 @@ const ToDo = () => {
     const [taskName, setTaskName] = React.useState('');
 
     const openModal = (task?: Task) => {
-        setSelectedTask(task || null); 
+        setSelectedTask(task || null);
         setIsModalOpen(true);
     };
 
     const closeModal = () => {
         setIsModalOpen(false);
-        setSelectedTask(null); 
+        setSelectedTask(null);
     };
 
     const saveTask = (task: Task) => {
@@ -38,25 +40,25 @@ const ToDo = () => {
             // Add new task
             setTasks([...tasks, task]);
         }
-        setTaskName(''); 
-        closeModal(); 
+        setTaskName('');
+        closeModal();
     };
 
     const handleTaskCreation = () => {
         if (taskName.trim()) {
             const newTask: Task = {
                 title: taskName.trim(),
-                dueDate: new Date(), 
+                dueDate: new Date(),
                 dateSet: false,
-                tag: [],    
-                recurrence: null, 
-                comment: '', 
+                tag: [],
+                recurrence: null,
+                comment: '',
                 fileUri: undefined,
-                filenames: [],  
-                fileDatas: []   
+                filenames: [],
+                fileDatas: []
             };
-            setTasks([...tasks, newTask]); 
-            setTaskName(''); 
+            setTasks([...tasks, newTask]);
+            setTaskName('');
         }
     };
 
@@ -65,12 +67,17 @@ const ToDo = () => {
             <Text style={styles.headerText}>To-Do</Text>
             {tasks.map((task, index) => (
                 task.title && (
-                    <Pressable key={index} onPress={() => openModal(task)} style={styles.task}>
-                        <Text style={styles.taskText}>{task.title}</Text>
-                        {task.dateSet && (
-                            <Text style={styles.taskText}>{task.dueDate.toLocaleDateString()}</Text>
-                        )}
-                    </Pressable>
+                    <View key={index} style={styles.task}>
+                        <Pressable onPress={() => { ToBeApproved }} style={styles.checkbox}>
+                            <MaterialIcon name="check-box-outline-blank" size={30} color="#5f6368" />
+                        </Pressable>
+                        <Pressable onPress={() => openModal(task)} style={styles.taskData}>
+                            <Text style={styles.taskText}>{task.title}</Text>
+                            {task.dateSet && (
+                                <Text style={styles.taskText}>{task.dueDate.toLocaleDateString()}</Text>
+                            )}
+                        </Pressable>
+                    </View>
                 )
             ))}
             <TextInput
@@ -79,7 +86,7 @@ const ToDo = () => {
                 numberOfLines={1}
                 value={taskName}
                 onChangeText={setTaskName}
-                onBlur={handleTaskCreation} 
+                onBlur={handleTaskCreation}
                 placeholder="+ Add New Task"
                 placeholderTextColor="black"
                 style={styles.taskInput}
@@ -88,7 +95,7 @@ const ToDo = () => {
                 isOpenTask={isModalOpen}
                 onClose={closeModal}
                 onSave={saveTask}
-                taskData={selectedTask} 
+                taskData={selectedTask}
             />
         </View>
     );
@@ -123,7 +130,7 @@ const styles = StyleSheet.create({
     task: {
         width: "100%",
         paddingVertical: 15,
-        paddingHorizontal: 20,
+        paddingHorizontal: "2%",
         backgroundColor: "#ffffff",
         borderRadius: 10,
         marginBottom: 15,
@@ -135,6 +142,16 @@ const styles = StyleSheet.create({
         color: "black",
         flexDirection: "row",
         justifyContent: "space-between"
+    },
+    checkbox: {
+        width: "10%"
+    },
+    taskData: {
+        width: "89%",
+        flexDirection: "row",
+        justifyContent: "space-between",
+        alignItems: "center",
+        paddingRight: "2%"
     },
     taskText: {
         fontSize: 18,
