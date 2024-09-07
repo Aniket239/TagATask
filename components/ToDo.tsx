@@ -2,7 +2,7 @@ import React from "react";
 import { FlatList, Pressable, StyleSheet, Text, TextInput, View } from "react-native";
 import NewTask from "./NewTask";
 import MaterialIcon from 'react-native-vector-icons/MaterialIcons';
-
+``
 interface Task {
     id: string;
     title: string;
