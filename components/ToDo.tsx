@@ -1,10 +1,10 @@
 import React from "react";
-import { Pressable, StyleSheet, Text, TextInput, View } from "react-native";
+import { FlatList, Pressable, StyleSheet, Text, TextInput, View } from "react-native";
 import NewTask from "./NewTask";
 import MaterialIcon from 'react-native-vector-icons/MaterialIcons';
-import ToBeApproved from "./ToBeApproved";
 
 interface Task {
+    id: string;
     title: string;
     dueDate: Date;  // Use Date object for consistency
     tag: string[];
@@ -14,6 +14,7 @@ interface Task {
     filenames: string[];  // Array of file names
     fileDatas: { name: string, data: string }[];  // Array of objects containing file name and base64 data
     dateSet: boolean;
+    status: "todo" | "tobeapproved" | "done";
 }
 
 const ToDo = () => {
@@ -23,6 +24,7 @@ const ToDo = () => {
     const [taskName, setTaskName] = React.useState('');
 
     const openModal = (task?: Task) => {
+        console.log(task);
         setSelectedTask(task || null);
         setIsModalOpen(true);
     };
@@ -33,11 +35,10 @@ const ToDo = () => {
     };
 
     const saveTask = (task: Task) => {
+        console.log(task);
         if (selectedTask) {
-            // Update existing task
             setTasks(tasks.map(t => (t === selectedTask ? task : t)));
         } else {
-            // Add new task
             setTasks([...tasks, task]);
         }
         setTaskName('');
@@ -47,6 +48,8 @@ const ToDo = () => {
     const handleTaskCreation = () => {
         if (taskName.trim()) {
             const newTask: Task = {
+                id: Math.random().toString(36).substr(2, 9),
+                status: "todo",
                 title: taskName.trim(),
                 dueDate: new Date(),
                 dateSet: false,
@@ -57,29 +60,45 @@ const ToDo = () => {
                 filenames: [],
                 fileDatas: []
             };
+            console.log(newTask);
+            
             setTasks([...tasks, newTask]);
             setTaskName('');
         }
     };
 
+    const handleCheckboxPress = (id: string) => {
+        onUpdateTaskStatus(id);
+    };
+
     return (
         <View style={styles.toDoContainer}>
             <Text style={styles.headerText}>To-Do</Text>
-            {tasks.map((task, index) => (
-                task.title && (
-                    <View key={index} style={styles.task}>
-                        <Pressable onPress={() => { ToBeApproved }} style={styles.checkbox}>
-                            <MaterialIcon name="check-box-outline-blank" size={30} color="#5f6368" />
-                        </Pressable>
-                        <Pressable onPress={() => openModal(task)} style={styles.taskData}>
-                            <Text style={styles.taskText}>{task.title}</Text>
-                            {task.dateSet && (
-                                <Text style={styles.taskText}>{task.dueDate.toLocaleDateString()}</Text>
-                            )}
-                        </Pressable>
-                    </View>
-                )
-            ))}
+            {tasks.length === 0 ? (
+                <Text style={styles.noTaskText}>No tasks available</Text>
+            ) : (
+                <FlatList
+                    data={tasks}
+                    keyExtractor={(item) => item.id}
+                    renderItem={({ item }) => (
+                        <View style={styles.task}>
+                            <Pressable onPress={() => handleCheckboxPress(item.id)} style={styles.checkbox}>
+                                <MaterialIcon
+                                    name={item.status === "done" ? "check-box" : "check-box-outline-blank"}
+                                    size={25}
+                                    color={item.status === "done" ? "green" : "gray"}
+                                />
+                            </Pressable>
+                            <Pressable style={styles.taskData} onPress={() => openModal(item)}>
+                                <Text style={styles.taskText}>{item.title}</Text>
+                                {item.dateSet && (
+                                    <Text style={styles.taskDate}>{item.dueDate.toLocaleDateString()}</Text>
+                                )}
+                            </Pressable>
+                        </View>
+                    )}
+                />
+            )}
             <TextInput
                 editable
                 multiline={false}

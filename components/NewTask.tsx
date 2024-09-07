@@ -8,15 +8,17 @@ import DocumentPicker from 'react-native-document-picker';
 import RNFS from 'react-native-fs';
 
 interface Task {
+    id: string;
     title: string;
     dueDate: Date;  // Use Date object for consistency
-    dateSet: boolean;
     tag: string[];
     recurrence: string | null;
     comment: string;
     fileUri?: string; // Add optional file URI
     filenames: string[];  // Array of file names
     fileDatas: { name: string, data: string }[];  // Array of objects containing file name and base64 data
+    dateSet: boolean;
+    status: "todo" | "tobeapproved" | "done";
 }
 
 const data = [
@@ -93,6 +95,7 @@ const NewTask = ({ isOpenTask, onClose, onSave, taskData }: { isOpenTask: boolea
 
         // Correctly using startDate and dueDate instead of the non-existent 'date'
         const task: Task = {
+            id: taskData?.id,
             title,
             dueDate: dueDate, // Use startDate or dueDate as appropriate
             dateSet: dateSet,
@@ -101,10 +104,14 @@ const NewTask = ({ isOpenTask, onClose, onSave, taskData }: { isOpenTask: boolea
             comment,
             fileUri,
             filenames: pickedFiles,
-            fileDatas: fileDataArray
+            fileDatas: fileDataArray,
+            status: taskData?.status,
         };
         console.log('====================================');
         console.log(dateSet);
+        console.log('====================================');
+        console.log('====================================');
+        console.log(taskData?.id);
         console.log('====================================');
 
         onSave(task);
