@@ -1,48 +1,87 @@
 import React from "react";
-import { View, Text, StyleSheet } from "react-native";
+import { View, FlatList, Text, StyleSheet, Pressable } from "react-native";
+import MaterialIcon from 'react-native-vector-icons/MaterialIcons';
 
-const Done = () =>{
-    return(
+interface Task {
+    id: string;
+    title: string;
+    dueDate: Date;
+    tag: string[];
+    recurrence: string | null;
+    comment: string;
+    fileUri?: string;
+    filenames: string[];
+    fileDatas: { name: string, data: string }[];
+    dateSet: boolean;
+    status: "todo" | "tobeapproved" | "done";
+}
+
+interface DoneProps {
+    tasks: Task[];
+    onDeleteTask: (taskId: string) => void;
+}
+
+const Done: React.FC<DoneProps> = ({ tasks, onDeleteTask }) => {
+    const handleDeleteTask = (id: string) => {
+        onDeleteTask(id);
+    };
+
+    return (
         <View style={styles.doneContainer}>
             <Text style={styles.headerText}>Done</Text>
+            {tasks.length === 0 ? (
+                <Text style={styles.noTaskText}>No tasks done yet</Text>
+            ) : (
+                <FlatList
+                    data={tasks}
+                    keyExtractor={(item) => item.id}
+                    renderItem={({ item }) => (
+                        <View style={styles.task}>
+                            <Text style={styles.taskText}>{item.title}</Text>
+                            <Pressable onPress={() => handleDeleteTask(item.id)} style={styles.deleteButton}>
+                                <MaterialIcon name="delete" size={25} color="red" />
+                            </Pressable>
+                        </View>
+                    )}
+                />
+            )}
         </View>
     );
-}
+};
 
 export default Done;
 
-
 const styles = StyleSheet.create({
     doneContainer: {
-        backgroundColor: "#f0f0f0", // Soft light gray for better contrast
+        backgroundColor: "#f0f0f0",
         width: "90%",
         height: "97%",
         justifyContent: "flex-start",
         alignItems: "center",
-        borderRadius: 15, // Slightly more rounded corners for a modern look
-        paddingTop: 25, // Extra padding for a more spacious layout
+        borderRadius: 15,
+        paddingTop: 25,
         paddingHorizontal: 20,
-        shadowColor: "#000", // Add shadow for a subtle 3D effect
+        shadowColor: "#000",
         shadowOffset: { width: 0, height: 2 },
         shadowOpacity: 0.1,
         shadowRadius: 4,
-        elevation: 3, // Elevation for Android shadow
+        elevation: 3,
     },
     headerText: {
-        color: "#333", // Darker gray for better readability
-        fontSize: 26, // Slightly larger font for emphasis
+        color: "#333",
+        fontSize: 26,
         marginBottom: 25,
         fontWeight: "bold",
-        textAlign: "left", // Center align the header text
-        width: "100%"
+        textAlign: "left",
+        width: "100%",
     },
     task: {
-        width: "100%", // Full width for better alignment
-        paddingVertical: 15, // Vertical padding for touchable area
-        paddingHorizontal: 20, // Horizontal padding for content spacing
-        backgroundColor: "#ffffff", // White background for task item
-        borderRadius: 10, // Rounded corners for task item
-        marginBottom: 15, // Spacing between tasks
+        width: "100%",
+        paddingVertical: 15,
+        paddingHorizontal: 20,
+        backgroundColor: "#ffffff",
+        borderRadius: 10,
+        marginBottom: 15,
         shadowColor: "#000",
         shadowOffset: { width: 0, height: 1 },
         shadowOpacity: 0.1,
@@ -50,10 +89,18 @@ const styles = StyleSheet.create({
         elevation: 2,
         color: "black",
         flexDirection: "row",
-        justifyContent: "space-between"
+        justifyContent: "space-between",
+        alignItems: "center",
     },
     taskText: {
-        fontSize: 18, // Slightly larger task title font
-        color: "black", // Darker text for better contrast
+        fontSize: 18,
+        color: "black",
+    },
+    noTaskText: {
+        fontSize: 16,
+        color: "gray",
+    },
+    deleteButton: {
+        paddingHorizontal: 10,
     },
 });

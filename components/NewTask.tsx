@@ -93,7 +93,6 @@ const NewTask = ({ isOpenTask, onClose, onSave, taskData }: { isOpenTask: boolea
             return;
         }
 
-        // Correctly using startDate and dueDate instead of the non-existent 'date'
         const task: Task = {
             id: taskData?.id,
             title,

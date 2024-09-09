@@ -1,30 +1,36 @@
-import React from "react";
+import React, { useState } from "react";
 import { FlatList, Pressable, StyleSheet, Text, TextInput, View } from "react-native";
 import NewTask from "./NewTask";
 import MaterialIcon from 'react-native-vector-icons/MaterialIcons';
-``
+
 interface Task {
     id: string;
     title: string;
-    dueDate: Date;  // Use Date object for consistency
+    dueDate: Date;
     tag: string[];
     recurrence: string | null;
     comment: string;
-    fileUri?: string; // Add optional file URI
-    filenames: string[];  // Array of file names
-    fileDatas: { name: string, data: string }[];  // Array of objects containing file name and base64 data
+    fileUri?: string;
+    filenames: string[];
+    fileDatas: { name: string, data: string }[];
     dateSet: boolean;
     status: "todo" | "tobeapproved" | "done";
 }
 
-const ToDo = () => {
-    const [tasks, setTasks] = React.useState<Task[]>([]);
-    const [isModalOpen, setIsModalOpen] = React.useState<boolean>(false);
-    const [selectedTask, setSelectedTask] = React.useState<Task | null>(null);
-    const [taskName, setTaskName] = React.useState('');
+interface ToDoProps {
+    tasks: Task[];
+    onCreateTask: (title: string) => void;
+    onUpdateTask: (task: Task) => void;
+    onDeleteTask: (taskId: string) => void;
+    onStatusChange: (id: string) => void;  // New prop to change task status
+}
+
+const ToDo: React.FC<ToDoProps> = ({ tasks, onCreateTask, onUpdateTask, onDeleteTask, onStatusChange }) => {
+    const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
+    const [selectedTask, setSelectedTask] = useState<Task | null>(null);
+    const [taskName, setTaskName] = useState('');
 
     const openModal = (task?: Task) => {
-        console.log(task);
         setSelectedTask(task || null);
         setIsModalOpen(true);
     };
@@ -35,11 +41,10 @@ const ToDo = () => {
     };
 
     const saveTask = (task: Task) => {
-        console.log(task);
         if (selectedTask) {
-            setTasks(tasks.map(t => (t === selectedTask ? task : t)));
+            onUpdateTask({ ...task, id: selectedTask.id });
         } else {
-            setTasks([...tasks, task]);
+            onCreateTask(task.title);
         }
         setTaskName('');
         closeModal();
@@ -47,35 +52,20 @@ const ToDo = () => {
 
     const handleTaskCreation = () => {
         if (taskName.trim()) {
-            const newTask: Task = {
-                id: Math.random().toString(36).substr(2, 9),
-                status: "todo",
-                title: taskName.trim(),
-                dueDate: new Date(),
-                dateSet: false,
-                tag: [],
-                recurrence: null,
-                comment: '',
-                fileUri: undefined,
-                filenames: [],
-                fileDatas: []
-            };
-            console.log(newTask);
-            
-            setTasks([...tasks, newTask]);
+            onCreateTask(taskName.trim());
             setTaskName('');
         }
     };
 
     const handleCheckboxPress = (id: string) => {
-        onUpdateTaskStatus(id);
+        onStatusChange(id);  // Call status change to move task to "tobeapproved"
     };
 
     return (
         <View style={styles.toDoContainer}>
             <Text style={styles.headerText}>To-Do</Text>
             {tasks.length === 0 ? (
-                <Text style={styles.noTaskText}>No tasks available</Text>
+                <></>
             ) : (
                 <FlatList
                     data={tasks}
@@ -84,15 +74,15 @@ const ToDo = () => {
                         <View style={styles.task}>
                             <Pressable onPress={() => handleCheckboxPress(item.id)} style={styles.checkbox}>
                                 <MaterialIcon
-                                    name={item.status === "done" ? "check-box" : "check-box-outline-blank"}
+                                    name="check-box-outline-blank"
                                     size={25}
-                                    color={item.status === "done" ? "green" : "gray"}
+                                    color="gray"
                                 />
                             </Pressable>
                             <Pressable style={styles.taskData} onPress={() => openModal(item)}>
                                 <Text style={styles.taskText}>{item.title}</Text>
                                 {item.dateSet && (
-                                    <Text style={styles.taskDate}>{item.dueDate.toLocaleDateString()}</Text>
+                                    <Text style={styles.taskText}>{item.dueDate.toLocaleDateString()}</Text>
                                 )}
                             </Pressable>
                         </View>

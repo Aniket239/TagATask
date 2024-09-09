@@ -5,54 +5,53 @@ import ToBeApproved from "../components/ToBeApproved";
 import Done from "../components/Done";
 import ToolNavbar from "../components/ToolNavbar";
 
-// Define the Task interface
+const { width } = Dimensions.get("window");
+
 interface Task {
-    id: string; // Unique identifier for each task
+    id: string;
     title: string;
     dueDate: Date;
-    dateSet: boolean;
     tag: string[];
     recurrence: string | null;
     comment: string;
     fileUri?: string;
     filenames: string[];
     fileDatas: { name: string, data: string }[];
-    status: "todo" | "tobeapproved" | "done"; // Task status
+    dateSet: boolean;
+    status: "todo" | "tobeapproved" | "done";
 }
-
-const { width } = Dimensions.get("window");
 
 const Home = () => {
     const [tasks, setTasks] = useState<Task[]>([]);
 
-    // Function to add or update a task
-    const handleSaveTask = (newTask: Task) => {
-        setTasks(prevTasks => {
-            const existingTaskIndex = prevTasks.findIndex(task => task.id === newTask.id);
-            if (existingTaskIndex !== -1) {
-                // Update existing task
-                const updatedTasks = [...prevTasks];
-                updatedTasks[existingTaskIndex] = newTask;
-                return updatedTasks;
-            } else {
-                // Add new task
-                return [...prevTasks, { ...newTask, id: `${Date.now()}`, status: "todo" }];
-            }
-        });
+    const handleTaskCreation = (title: string) => {
+        if (title.trim()) {
+            const newTask: Task = {
+                id: Math.random().toString(36).substr(2, 9),
+                status: "todo",
+                title: title.trim(),
+                dueDate: new Date(),
+                dateSet: false,
+                tag: [],
+                recurrence: null,
+                comment: '',
+                filenames: [],
+                fileDatas: []
+            };
+            setTasks([...tasks, newTask]);
+        }
     };
 
-    // Function to update task status
-    const updateTaskStatus = (taskId: string, newStatus: "tobeapproved" | "done") => {
-        setTasks(prevTasks =>
-            prevTasks.map(task =>
-                task.id === taskId ? { ...task, status: newStatus } : task
-            )
-        );
+    const handleTaskUpdate = (updatedTask: Task) => {
+        setTasks(tasks.map(t => (t.id === updatedTask.id ? updatedTask : t)));
     };
 
-    // Function to delete a task
-    const deleteTask = (taskId: string) => {
-        setTasks(prevTasks => prevTasks.filter(task => task.id !== taskId));
+    const handleTaskStatusChange = (id: string, newStatus: "todo" | "tobeapproved" | "done") => {        
+        setTasks(tasks.map(t => (t.id === id ? { ...t, status: newStatus } : t)));
+    };
+
+    const handleTaskDelete = (taskId: string) => {
+        setTasks(tasks.filter(t => t.id !== taskId));
     };
 
     return (
@@ -66,27 +65,25 @@ const Home = () => {
                 style={{ flex: 1 }}
             >
                 <View style={{ width: width, justifyContent: 'flex-start', alignItems: 'center' }}>
-                    <ToDo 
-                        tasks={tasks.filter(task => task.status === "todo")}
-                        onSaveTask={handleSaveTask}
-                        onUpdateTaskStatus={updateTaskStatus}
-                        onDeleteTask={deleteTask}
+                    <ToDo
+                        tasks={tasks.filter(t => t.status === "todo")}
+                        onCreateTask={handleTaskCreation}
+                        onUpdateTask={handleTaskUpdate}
+                        onDeleteTask={handleTaskDelete}
+                        onStatusChange={(id: string) => handleTaskStatusChange(id, "tobeapproved")}
                     />
                 </View>
                 <View style={{ width: width, justifyContent: 'flex-start', alignItems: 'center' }}>
-                    <ToBeApproved 
-                        tasks={tasks.filter(task => task.status === "tobeapproved")}
-                        onSaveTask={handleSaveTask}
-                        onUpdateTaskStatus={updateTaskStatus}
-                        onDeleteTask={deleteTask}
+                    <ToBeApproved
+                        tasks={tasks.filter(t => t.status === "tobeapproved")}
+                        onStatusChange={(id: string) => handleTaskStatusChange(id, "done")}
+                        onDeleteTask={handleTaskDelete}
                     />
                 </View>
                 <View style={{ width: width, justifyContent: 'flex-start', alignItems: 'center' }}>
-                    <Done 
-                        tasks={tasks.filter(task => task.status === "done")}
-                        onSaveTask={handleSaveTask}
-                        onUpdateTaskStatus={updateTaskStatus}
-                        onDeleteTask={deleteTask}
+                    <Done
+                        tasks={tasks.filter(t => t.status === "done")}
+                        onDeleteTask={handleTaskDelete}
                     />
                 </View>
             </ScrollView>

@@ -1,58 +1,51 @@
 import React from "react";
-import { View, Text, StyleSheet, Pressable, FlatList } from "react-native";
+import { View, FlatList, Pressable, Text, StyleSheet } from "react-native";
 import MaterialIcon from 'react-native-vector-icons/MaterialIcons';
 
 interface Task {
     id: string;
     title: string;
     dueDate: Date;
-    dateSet: boolean;
     tag: string[];
     recurrence: string | null;
     comment: string;
     fileUri?: string;
     filenames: string[];
     fileDatas: { name: string, data: string }[];
+    dateSet: boolean;
     status: "todo" | "tobeapproved" | "done";
 }
 
 interface ToBeApprovedProps {
     tasks: Task[];
-    onSaveTask: (task: Task) => void;
-    onUpdateTaskStatus: (taskId: string, newStatus: "done") => void;
+    onStatusChange: (id: string) => void;  // Change status to "done"
     onDeleteTask: (taskId: string) => void;
 }
 
-const ToBeApproved: React.FC<ToBeApprovedProps> = ({ tasks, onSaveTask, onUpdateTaskStatus, onDeleteTask }) => {
-
-    const handleApprove = (taskId: string) => {
-        onUpdateTaskStatus(taskId, "done");
+const ToBeApproved: React.FC<ToBeApprovedProps> = ({ tasks, onStatusChange, onDeleteTask }) => {
+    const handleCheckboxPress = (id: string) => {
+        onStatusChange(id);  // Move task to "done"
     };
 
     return (
         <View style={styles.toBeApprovedContainer}>
             <Text style={styles.headerText}>To Be Approved</Text>
             {tasks.length === 0 ? (
-                <Text style={styles.noTaskText}>No tasks pending approval</Text>
+                <Text style={styles.noTaskText}>No tasks to be approved</Text>
             ) : (
                 <FlatList
                     data={tasks}
                     keyExtractor={(item) => item.id}
                     renderItem={({ item }) => (
                         <View style={styles.task}>
-                            <Pressable onPress={() => handleApprove(item.id)} style={styles.checkbox}>
-                                <MaterialIcon 
-                                    name="check-circle-outline" 
-                                    size={25} 
-                                    color="orange" 
+                            <Pressable onPress={() => handleCheckboxPress(item.id)} style={styles.checkbox}>
+                                <MaterialIcon
+                                    name="check-circle"
+                                    size={25}
+                                    color="gray"
                                 />
                             </Pressable>
-                            <View style={styles.taskData}>
-                                <Text style={styles.taskText}>{item.title}</Text>
-                                {item.dateSet && (
-                                    <Text style={styles.taskDate}>{item.dueDate.toLocaleDateString()}</Text>
-                                )}
-                            </View>
+                            <Text style={styles.taskText}>{item.title}</Text>
                         </View>
                     )}
                 />
@@ -85,17 +78,12 @@ const styles = StyleSheet.create({
         marginBottom: 25,
         fontWeight: "bold",
         textAlign: "left",
-        width: "100%"
-    },
-    noTaskText: {
-        fontSize: 18,
-        color: "#666",
-        marginTop: 20,
+        width: "100%",
     },
     task: {
         width: "100%",
         paddingVertical: 15,
-        paddingHorizontal: "2%",
+        paddingHorizontal: 20,
         backgroundColor: "#ffffff",
         borderRadius: 10,
         marginBottom: 15,
@@ -107,24 +95,16 @@ const styles = StyleSheet.create({
         color: "black",
         flexDirection: "row",
         justifyContent: "space-between",
-        alignItems: "center"
-    },
-    checkbox: {
-        width: "10%",
-    },
-    taskData: {
-        width: "90%",
-        flexDirection: "row",
-        justifyContent: "space-between",
-        alignItems: "center",
-        paddingRight: "2%"
     },
     taskText: {
         fontSize: 18,
         color: "black",
     },
-    taskDate: {
-        fontSize: 14,
-        color: "#555",
+    checkbox: {
+        width: "10%",
+    },
+    noTaskText: {
+        fontSize: 16,
+        color: "gray",
     },
 });
