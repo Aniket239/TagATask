@@ -42,7 +42,7 @@ const ToBeApproved: React.FC<ToBeApprovedProps> = ({ tasks, onStatusChange, onDe
                                 <MaterialIcon
                                     name="check-circle"
                                     size={25}
-                                    color="gray"
+                                    color="green"
                                 />
                             </Pressable>
                             <Text style={styles.taskText}>{item.title}</Text>
@@ -83,7 +83,7 @@ const styles = StyleSheet.create({
     task: {
         width: "100%",
         paddingVertical: 15,
-        paddingHorizontal: 20,
+        paddingHorizontal: 10,
         backgroundColor: "#ffffff",
         borderRadius: 10,
         marginBottom: 15,
@@ -97,6 +97,7 @@ const styles = StyleSheet.create({
         justifyContent: "space-between",
     },
     taskText: {
+        width: "89%",
         fontSize: 18,
         color: "black",
     },

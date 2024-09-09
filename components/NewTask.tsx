@@ -25,7 +25,6 @@ const data = [
     { label: 'Work', value: 'Work' },
     { label: 'Personal', value: 'Personal' },
     { label: 'Shopping', value: 'Shopping' },
-    { label: 'Others', value: 'Others' },
 ];
 
 const recurrenceData = [
@@ -41,6 +40,9 @@ const NewTask = ({ isOpenTask, onClose, onSave, taskData }: { isOpenTask: boolea
     const [dueDate, setDueDate] = useState<Date>(taskData?.dueDate ? new Date(taskData.dueDate) : defaultDate);
     const [dateSet, setDateSet] = useState<boolean>(taskData?.dateSet || false);;
     const [tag, setTag] = useState<string[]>(taskData?.tag || []);
+    const [inputValue, setInputValue] = useState(""); // Store the user's search input
+    const [availableTags, setAvailableTags] = useState(data); // Initial dropdown options
+    const [customTag, setCustomTag] = useState(false); // Track if the user wants to create a new tag
     const [recurrence, setRecurrence] = useState<string | null>(taskData?.recurrence || null);
     const [comment, setComment] = useState(taskData?.comment || "");
     const [fileUri, setFileUri] = useState<string | undefined>(taskData?.fileUri);
@@ -66,6 +68,28 @@ const NewTask = ({ isOpenTask, onClose, onSave, taskData }: { isOpenTask: boolea
             setFileDataArray(taskData.fileDatas || []);
         }
     }, [taskData]);
+
+
+    const handleAddTag = () => {
+        const newTag = { label: inputValue, value: inputValue };
+        setAvailableTags(prevTags => [...prevTags, newTag]); // Add the new tag to the list
+        setTag(prevTags => [...prevTags, inputValue]); // Automatically select the new tag
+        setInputValue(""); // Reset the input field
+        setCustomTag(false); // Reset the customTag flag
+    };
+
+    const handleSearchChange = (input) => {
+        setInputValue(input);
+        const isTagPresent = availableTags.some(tag => tag.label.toLowerCase() === input.toLowerCase());
+        setCustomTag(!isTagPresent && input !== ""); // Show "Add Tag" button if the tag doesn't exist
+    };
+
+    // Create the tag when the input loses focus
+    const handleBlur = () => {
+        if (customTag && inputValue.trim() !== "") {
+            handleAddTag();
+        }
+    };
 
     const resetForm = () => {
         setTitle("");
@@ -287,43 +311,42 @@ const NewTask = ({ isOpenTask, onClose, onSave, taskData }: { isOpenTask: boolea
                                         setDueDate(time);
                                         setDateSet(true);
                                     }}
-                                    onCancel={() => { setIsDueTimePickerOpen(false)                                     
+                                    onCancel={() => {
+                                        setIsDueTimePickerOpen(false)
                                     }}
                                 />
-                                {dateSet?<Pressable onPress={()=>setDateSet(false)}>
+                                {dateSet ? <Pressable onPress={() => setDateSet(false)}>
                                     <MaterialIcon name="restart-alt" size={30} color={'#5f6368'} />
-                                </Pressable>:<></>}
-                                
+                                </Pressable> : <></>}
+
                             </View>
                         </View>
-                        <View style={styles.labelTitle}>
-                            <View style={styles.labelIcon}>
+                        <View style={styles.label}>
+                            <View style= {styles.labelIcon}>
                                 <MaterialIcon name="label-outline" size={35} color={"#5f6368"} />
                             </View>
-                            <View style={styles.label}>
+                            <View style={styles.labelTitle}>
                                 <MultiSelect
-                                    style={[styles.dropdown, isFocus && { borderColor: 'black' }]}
+                                    style={[styles.labelDropdown, customTag && { borderColor: 'black' }]}
                                     placeholderStyle={styles.placeholderStyle}
                                     selectedTextStyle={styles.selectedTextStyle}
                                     inputSearchStyle={styles.inputSearchStyle}
-                                    data={data}
+                                    data={availableTags}  // Use the available tags array
                                     search
-                                    // maxHeight={300}
                                     labelField="label"
                                     valueField="value"
-                                    placeholder={!isFocus ? 'Label' : 'Select Label'}
-                                    searchPlaceholder="Search..."
+                                    placeholder="Select Label"
+                                    searchPlaceholder="Search or create a label"
                                     value={tag}
-                                    onFocus={() => setIsFocus(true)}
-                                    onBlur={() => setIsFocus(false)}
+                                    onFocus={() => setCustomTag(false)}
+                                    onBlur={handleBlur}  // Trigger onBlur to create new tag
                                     onChange={item => {
                                         setTag(item);
-                                        setIsFocus(false);
+                                        setCustomTag(false);
                                     }}
-                                    disable={!isOpenTask}
-                                    itemContainerStyle={styles.labelDropdownItemContainer}
+                                    onChangeText={handleSearchChange} // Triggered on search input
+                                    selectedStyle={styles.selectedTagStyle} // Style for selected tags  
                                     itemTextStyle={styles.labelDropdownItemText}
-                                    activeColor="lightgrey"
                                 />
                             </View>
                         </View>
@@ -345,7 +368,6 @@ const NewTask = ({ isOpenTask, onClose, onSave, taskData }: { isOpenTask: boolea
                                 style={[styles.dropdown, isFocus && { borderColor: 'black' }]}
                                 placeholderStyle={styles.reoccurencePlaceholderStyle}
                                 selectedTextStyle={styles.selectedTextStyle}
-                                inputSearchStyle={styles.inputSearchStyle}
                                 data={recurrenceData}
                                 maxHeight={300}
                                 labelField="label"
@@ -523,28 +545,27 @@ const styles = StyleSheet.create({
         color: "black",
         marginLeft: 5
     },
-    labelTitle: {
-        flexDirection: "row", // Arrange the label and icon in a row
-        justifyContent: "flex-start",
-        alignItems: "flex-start",
-        borderWidth: 1,
-        borderColor: '#ccc',
-        marginBottom: "1.5%",
-        paddingLeft: "3%"
-    },
-    labelIcon: {
-        marginTop: "2%"
-    },
+
     label: {
-        flexDirection: "column", // Arrange the label and icon in a row
         width: "100%",
+        flexDirection: "row",
+        paddingLeft: "3%",
+        alignItems: "flex-start",
     },
-    dropdown: {
+    labelIcon:{
+        marginTop: "2%",
+    },
+    labelTitle: {
+        flexDirection: "column",
+        alignItems: "center",
+        justifyContent: "flex-start",
+        width: "93%",
+    },
+    labelDropdown: {
         height: 50,
         paddingHorizontal: "2%",
         backgroundColor: "#fff",
-        color: "black",
-        width: "90%",
+        width: "100%",
         flexDirection: "column",
     },
     labelDropdownItemContainer: {
@@ -561,7 +582,14 @@ const styles = StyleSheet.create({
         fontSize: 20,
         color: "black",
     },
-    reoccurencePlaceholderStyle:{
+    dropdown: {
+        height: 50,
+        paddingHorizontal: "2%",
+        backgroundColor: "#fff",
+        width: "90%",
+        flexDirection: "column",
+    },
+    reoccurencePlaceholderStyle: {
         fontSize: 20,
         color: "black",
         paddingLeft: "1.5%"
@@ -571,15 +599,40 @@ const styles = StyleSheet.create({
         color: "black",
         flexDirection: "column"
     },
+    selectedItemContainer: {
+        flexDirection: "column",
+        backgroundColor: "grey",
+        color: "black",
+    },
     inputSearchStyle: {
         height: 40,
         fontSize: 16,
         color: "black",
         backgroundColor: "#f9f9f9",
         paddingHorizontal: 10,
+        borderColor: "#ccc",
+        borderWidth: 1,
     },
-    selectedItemContainer: {
-        backgroundColor: "grey",
+    selectedTagStyle: {
+        backgroundColor: "#e0e0e0",
+        borderRadius: 10,
+        paddingHorizontal: 10,
+        paddingVertical: 5,
+        marginRight: 5,
+        borderWidth: 0
+    },
+    addTagButton: {
+        padding: 10,
+        backgroundColor: "#f0f0f0",
+        alignItems: "center",
+        justifyContent: "center",
+        borderRadius: 5,
+        marginTop: 10,
+        width: "90%",
+    },
+    addTagText: {
+        fontSize: 16,
+        color: "#1a73e8",
     },
     comment: {
         color: "black",
