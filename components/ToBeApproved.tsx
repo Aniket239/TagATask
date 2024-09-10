@@ -46,6 +46,9 @@ const ToBeApproved: React.FC<ToBeApprovedProps> = ({ tasks, onStatusChange, onDe
                                 />
                             </Pressable>
                             <Text style={styles.taskText}>{item.title}</Text>
+                            {item.dateSet && (
+                                <Text style={styles.taskText}>{item.dueDate.toLocaleDateString()}</Text>
+                            )}
                         </View>
                     )}
                 />

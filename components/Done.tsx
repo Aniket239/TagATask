@@ -18,13 +18,12 @@ interface Task {
 
 interface DoneProps {
     tasks: Task[];
-    onDeleteTask: (taskId: string) => void;
 }
 
-const Done: React.FC<DoneProps> = ({ tasks, onDeleteTask }) => {
-    const handleDeleteTask = (id: string) => {
-        onDeleteTask(id);
-    };
+const Done: React.FC<DoneProps> = ({ tasks }) => {
+    console.log('====================================');
+    console.log(tasks);
+    console.log('====================================');
 
     return (
         <View style={styles.doneContainer}>
@@ -38,12 +37,13 @@ const Done: React.FC<DoneProps> = ({ tasks, onDeleteTask }) => {
                     renderItem={({ item }) => (
                         <View style={styles.task}>
                             <Text style={styles.taskText}>{item.title}</Text>
-                            <Pressable onPress={() => handleDeleteTask(item.id)} style={styles.deleteButton}>
-                                <MaterialIcon name="delete" size={25} color="red" />
-                            </Pressable>
+                            {item.dateSet && (
+                                <Text style={styles.taskText}>{item.dueDate.toLocaleDateString()}</Text>
+                            )}
                         </View>
                     )}
                 />
+
             )}
         </View>
     );
@@ -93,8 +93,10 @@ const styles = StyleSheet.create({
         alignItems: "center",
     },
     taskText: {
+        width: "100%",
         fontSize: 18,
         color: "black",
+        textDecorationLine: "line-through"
     },
     noTaskText: {
         fontSize: 16,

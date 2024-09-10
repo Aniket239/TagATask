@@ -46,7 +46,10 @@ const Home = () => {
         setTasks(tasks.map(t => (t.id === updatedTask.id ? updatedTask : t)));
     };
 
-    const handleTaskStatusChange = (id: string, newStatus: "todo" | "tobeapproved" | "done") => {        
+    const handleTaskStatusChange = (id: string, newStatus: "todo" | "tobeapproved" | "done") => {
+        console.log('====================================');
+        console.log(tasks);
+        console.log('====================================');       
         setTasks(tasks.map(t => (t.id === id ? { ...t, status: newStatus } : t)));
     };
 
@@ -83,7 +86,6 @@ const Home = () => {
                 <View style={{ width: width, justifyContent: 'flex-start', alignItems: 'center' }}>
                     <Done
                         tasks={tasks.filter(t => t.status === "done")}
-                        onDeleteTask={handleTaskDelete}
                     />
                 </View>
             </ScrollView>

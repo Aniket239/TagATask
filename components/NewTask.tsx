@@ -3,7 +3,7 @@ import { View, TextInput, Button, StyleSheet, Modal, Pressable, Text, Alert, Tou
 import { Dropdown, MultiSelect } from 'react-native-element-dropdown';
 import MaterialIcon from 'react-native-vector-icons/MaterialIcons';
 import DatePicker from 'react-native-date-picker';
-import { launchCamera } from 'react-native-image-picker';
+import { launchCamera, MediaType } from 'react-native-image-picker';
 import DocumentPicker from 'react-native-document-picker';
 import RNFS from 'react-native-fs';
 
@@ -21,11 +21,6 @@ interface Task {
     status: "todo" | "tobeapproved" | "done";
 }
 
-const data = [
-    { label: 'Work', value: 'Work' },
-    { label: 'Personal', value: 'Personal' },
-    { label: 'Shopping', value: 'Shopping' },
-];
 
 const recurrenceData = [
     { label: 'None', value: 'None' },
@@ -33,16 +28,25 @@ const recurrenceData = [
     { label: 'Weekly', value: 'Weekly' },
     { label: 'Monthly', value: 'Monthly' },
 ];
+interface Tag {
+    label: string;
+    value: string;
+}
+
+
 
 const NewTask = ({ isOpenTask, onClose, onSave, taskData }: { isOpenTask: boolean; onClose: () => void; onSave: (task: Task) => void; taskData?: Task | null }) => {
-    const defaultDate = new Date(); // This will set the default date as today's date
+    const defaultDate = new Date();
+
+    // Set default values for id and status if not provided
     const [title, setTitle] = useState(taskData?.title || "");
     const [dueDate, setDueDate] = useState<Date>(taskData?.dueDate ? new Date(taskData.dueDate) : defaultDate);
-    const [dateSet, setDateSet] = useState<boolean>(taskData?.dateSet || false);;
+    const [dateSet, setDateSet] = useState<boolean>(taskData?.dateSet || false);
+    const [availableTags, setAvailableTags] = useState<Tag[]>([]);
+    const [filteredTags, setFilteredTags] = useState<Tag[]>(availableTags);
+    const [inputValue, setInputValue] = useState<string>("");
+    const [customTag, setCustomTag] = useState(false);
     const [tag, setTag] = useState<string[]>(taskData?.tag || []);
-    const [inputValue, setInputValue] = useState(""); // Store the user's search input
-    const [availableTags, setAvailableTags] = useState(data); // Initial dropdown options
-    const [customTag, setCustomTag] = useState(false); // Track if the user wants to create a new tag
     const [recurrence, setRecurrence] = useState<string | null>(taskData?.recurrence || null);
     const [comment, setComment] = useState(taskData?.comment || "");
     const [fileUri, setFileUri] = useState<string | undefined>(taskData?.fileUri);
@@ -54,6 +58,12 @@ const NewTask = ({ isOpenTask, onClose, onSave, taskData }: { isOpenTask: boolea
     const [isDueDatePickerOpen, setIsDueDatePickerOpen] = useState(false);
     const [isDueTimePickerOpen, setIsDueTimePickerOpen] = useState(false);
     const [isTaskMenuOpen, setTaskMenuOpen] = useState(false);
+
+    // Ensure `id` is a string, defaulting to an empty string if `undefined`
+    const id = taskData?.id || "";
+
+    // Ensure `status` is either "todo", "tobeapproved", or "done", defaulting to "todo" if `undefined`
+    const status: "todo" | "tobeapproved" | "done" = taskData?.status || "todo";
 
     useEffect(() => {
         if (taskData) {
@@ -69,28 +79,52 @@ const NewTask = ({ isOpenTask, onClose, onSave, taskData }: { isOpenTask: boolea
         }
     }, [taskData]);
 
-
-    const handleAddTag = () => {
-        const newTag = { label: inputValue, value: inputValue };
-        setAvailableTags(prevTags => [...prevTags, newTag]); // Add the new tag to the list
-        setTag(prevTags => [...prevTags, inputValue]); // Automatically select the new tag
-        setInputValue(""); // Reset the input field
-        setCustomTag(false); // Reset the customTag flag
-    };
+    useEffect(() => {
+        setFilteredTags(availableTags); // Update filtered tags when availableTags changes
+    }, [availableTags]);
 
     const handleSearchChange = (input) => {
         setInputValue(input);
-        const isTagPresent = availableTags.some(tag => tag.label.toLowerCase() === input.toLowerCase());
-        setCustomTag(!isTagPresent && input !== ""); // Show "Add Tag" button if the tag doesn't exist
+    
+        // Filter the available tags based on the search input
+        if (input) {
+            const filtered = availableTags.filter((tag) =>
+                tag.label.toLowerCase().includes(input.toLowerCase())
+            );
+            setFilteredTags(filtered);
+        } else {
+            setFilteredTags(availableTags); // Reset when input is cleared
+        }
+    
+        const isTagPresent = availableTags.some((tag) => tag.label.toLowerCase() === input.toLowerCase());
+        setCustomTag(!isTagPresent && input !== "");
     };
+    
+    const handleAddTag = () => {
+        const newTag = { label: inputValue, value: inputValue };
+    
+        // Add the new tag to both availableTags and filteredTags
+        setAvailableTags((prevTags) => [...prevTags, newTag]);
+        setFilteredTags((prevTags) => [...prevTags, newTag]);
+    
+        // Automatically select the new tag
+        setTag((prevTags) => [...prevTags, inputValue]);
+    
+        // Reset the search input and the filtered tags after adding the new tag
+        setInputValue(""); 
+        setFilteredTags(availableTags); // Reset to show all available tags
+        setCustomTag(false);
+    };
+    
 
-    // Create the tag when the input loses focus
     const handleBlur = () => {
         if (customTag && inputValue.trim() !== "") {
             handleAddTag();
+        } else {
+            setInputValue("");
+            setFilteredTags(availableTags); // Reset to show all tags when input is blurred
         }
     };
-
     const resetForm = () => {
         setTitle("");
         setDueDate(new Date("2024-01-01"));
@@ -118,7 +152,7 @@ const NewTask = ({ isOpenTask, onClose, onSave, taskData }: { isOpenTask: boolea
         }
 
         const task: Task = {
-            id: taskData?.id,
+            id,
             title,
             dueDate: dueDate, // Use startDate or dueDate as appropriate
             dateSet: dateSet,
@@ -128,7 +162,7 @@ const NewTask = ({ isOpenTask, onClose, onSave, taskData }: { isOpenTask: boolea
             fileUri,
             filenames: pickedFiles,
             fileDatas: fileDataArray,
-            status: taskData?.status,
+            status,
         };
         console.log('====================================');
         console.log(dateSet);
@@ -146,7 +180,7 @@ const NewTask = ({ isOpenTask, onClose, onSave, taskData }: { isOpenTask: boolea
 
     const handleCameraLaunch = async (isCamera: boolean) => {
         const options = {
-            mediaType: isCamera ? 'photo' : 'video',
+            mediaType: isCamera ? 'photo' as MediaType : 'video' as MediaType,
         };
         try {
             const response = await launchCamera(options);
@@ -176,7 +210,7 @@ const NewTask = ({ isOpenTask, onClose, onSave, taskData }: { isOpenTask: boolea
         }
     };
 
-
+    
     const uploadFileOnPressHandler = async () => {
         try {
             const pickedNewFiles = await DocumentPicker.pick({
@@ -322,7 +356,7 @@ const NewTask = ({ isOpenTask, onClose, onSave, taskData }: { isOpenTask: boolea
                             </View>
                         </View>
                         <View style={styles.label}>
-                            <View style= {styles.labelIcon}>
+                            <View style={styles.labelIcon}>
                                 <MaterialIcon name="label-outline" size={35} color={"#5f6368"} />
                             </View>
                             <View style={styles.labelTitle}>
@@ -331,7 +365,7 @@ const NewTask = ({ isOpenTask, onClose, onSave, taskData }: { isOpenTask: boolea
                                     placeholderStyle={styles.placeholderStyle}
                                     selectedTextStyle={styles.selectedTextStyle}
                                     inputSearchStyle={styles.inputSearchStyle}
-                                    data={availableTags}  // Use the available tags array
+                                    data={filteredTags} // Use filteredTags here instead of availableTags
                                     search
                                     labelField="label"
                                     valueField="value"
@@ -340,10 +374,7 @@ const NewTask = ({ isOpenTask, onClose, onSave, taskData }: { isOpenTask: boolea
                                     value={tag}
                                     onFocus={() => setCustomTag(false)}
                                     onBlur={handleBlur}  // Trigger onBlur to create new tag
-                                    onChange={item => {
-                                        setTag(item);
-                                        setCustomTag(false);
-                                    }}
+                                    onChange={setTag}
                                     onChangeText={handleSearchChange} // Triggered on search input
                                     selectedStyle={styles.selectedTagStyle} // Style for selected tags  
                                     itemTextStyle={styles.labelDropdownItemText}
@@ -551,9 +582,12 @@ const styles = StyleSheet.create({
         flexDirection: "row",
         paddingLeft: "3%",
         alignItems: "flex-start",
+        borderColor: "#ccc",
+        borderWidth: 1,
+        marginBottom: "2%"
     },
-    labelIcon:{
-        marginTop: "2%",
+    labelIcon: {
+        marginTop: "1.5%",
     },
     labelTitle: {
         flexDirection: "column",
