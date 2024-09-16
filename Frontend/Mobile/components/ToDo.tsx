@@ -6,13 +6,13 @@ import MaterialIcon from 'react-native-vector-icons/MaterialIcons';
 interface Task {
     id: string;
     title: string;
-    dueDate: Date;
+    dueDate: Date;  // Use Date object for consistency
     tag: string[];
     recurrence: string | null;
-    comment: string;
-    fileUri?: string;
-    filenames: string[];
-    fileDatas: { name: string, data: string }[];
+    comment: string[];  // Changed to an array of strings
+    fileUri?: string; // Add optional file URI
+    filenames: string[];  // Array of file names
+    fileDatas: { name: string, data: string }[];  // Array of objects containing file name and base64 data
     dateSet: boolean;
     status: "todo" | "tobeapproved" | "done";
 }

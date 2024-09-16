@@ -10,22 +10,21 @@ const { width } = Dimensions.get("window");
 interface Task {
     id: string;
     title: string;
-    dueDate: Date;
+    dueDate: Date;  // Use Date object for consistency
     tag: string[];
     recurrence: string | null;
-    comment: string;
-    fileUri?: string;
-    filenames: string[];
-    fileDatas: { name: string, data: string }[];
+    comment: string[];  // Changed to an array of strings
+    fileUri?: string; // Add optional file URI
+    filenames: string[];  // Array of file names
+    fileDatas: { name: string, data: string }[];  // Array of objects containing file name and base64 data
     dateSet: boolean;
     status: "todo" | "tobeapproved" | "done";
 }
-
 const Home = () => {
     const [tasks, setTasks] = useState<Task[]>([]);
 
     const handleTaskCreation = (title: string) => {
-        if (title.trim()) {
+        if (title.trim()) { 
             const newTask: Task = {
                 id: Math.random().toString(36).substr(2, 9),
                 status: "todo",
@@ -34,7 +33,7 @@ const Home = () => {
                 dateSet: false,
                 tag: [],
                 recurrence: null,
-                comment: '',
+                comment: [],
                 filenames: [],
                 fileDatas: []
             };

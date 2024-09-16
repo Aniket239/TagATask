@@ -13,14 +13,13 @@ interface Task {
     dueDate: Date;  // Use Date object for consistency
     tag: string[];
     recurrence: string | null;
-    comment: string;
+    comment: string[];  // Changed to an array of strings
     fileUri?: string; // Add optional file URI
     filenames: string[];  // Array of file names
     fileDatas: { name: string, data: string }[];  // Array of objects containing file name and base64 data
     dateSet: boolean;
     status: "todo" | "tobeapproved" | "done";
 }
-
 
 const recurrenceData = [
     { label: 'None', value: 'None' },
@@ -32,8 +31,6 @@ interface Tag {
     label: string;
     value: string;
 }
-
-
 
 const NewTask = ({ isOpenTask, onClose, onSave, taskData }: { isOpenTask: boolean; onClose: () => void; onSave: (task: Task) => void; taskData?: Task | null }) => {
     const defaultDate = new Date();
@@ -48,7 +45,8 @@ const NewTask = ({ isOpenTask, onClose, onSave, taskData }: { isOpenTask: boolea
     const [customTag, setCustomTag] = useState(false);
     const [tag, setTag] = useState<string[]>(taskData?.tag || []);
     const [recurrence, setRecurrence] = useState<string | null>(taskData?.recurrence || null);
-    const [comment, setComment] = useState(taskData?.comment || "");
+    const [comment, setComment] = useState<string>("");  // For input field
+    const [comments, setComments] = useState<string[]>(taskData?.comment || []);  // For storing comments
     const [fileUri, setFileUri] = useState<string | undefined>(taskData?.fileUri);
     const [isFocus, setIsFocus] = useState(false);
     const [titleError, setTitleError] = useState(false);
@@ -85,7 +83,7 @@ const NewTask = ({ isOpenTask, onClose, onSave, taskData }: { isOpenTask: boolea
 
     const handleSearchChange = (input) => {
         setInputValue(input);
-    
+
         // Filter the available tags based on the search input
         if (input) {
             const filtered = availableTags.filter((tag) =>
@@ -95,27 +93,27 @@ const NewTask = ({ isOpenTask, onClose, onSave, taskData }: { isOpenTask: boolea
         } else {
             setFilteredTags(availableTags); // Reset when input is cleared
         }
-    
+
         const isTagPresent = availableTags.some((tag) => tag.label.toLowerCase() === input.toLowerCase());
         setCustomTag(!isTagPresent && input !== "");
     };
-    
+
     const handleAddTag = () => {
         const newTag = { label: inputValue, value: inputValue };
-    
+
         // Add the new tag to both availableTags and filteredTags
         setAvailableTags((prevTags) => [...prevTags, newTag]);
         setFilteredTags((prevTags) => [...prevTags, newTag]);
-    
+
         // Automatically select the new tag
         setTag((prevTags) => [...prevTags, inputValue]);
-    
+
         // Reset the search input and the filtered tags after adding the new tag
-        setInputValue(""); 
+        setInputValue("");
         setFilteredTags(availableTags); // Reset to show all available tags
         setCustomTag(false);
     };
-    
+
 
     const handleBlur = () => {
         if (customTag && inputValue.trim() !== "") {
@@ -145,6 +143,13 @@ const NewTask = ({ isOpenTask, onClose, onSave, taskData }: { isOpenTask: boolea
         setTaskMenuOpen(false);
     };
 
+    const addComment = () => {
+        if (comment.trim() !== "") {
+            setComments(prev => [...prev, comment]);
+            setComment("");  // Reset the input field after adding
+        }
+    };
+
     const saveTask = () => {
         if (title.trim() === "") {
             setTitleError(true);
@@ -158,7 +163,7 @@ const NewTask = ({ isOpenTask, onClose, onSave, taskData }: { isOpenTask: boolea
             dateSet: dateSet,
             tag,
             recurrence,
-            comment,
+            comment:comments,
             fileUri,
             filenames: pickedFiles,
             fileDatas: fileDataArray,
@@ -210,7 +215,7 @@ const NewTask = ({ isOpenTask, onClose, onSave, taskData }: { isOpenTask: boolea
         }
     };
 
-    
+
     const uploadFileOnPressHandler = async () => {
         try {
             const pickedNewFiles = await DocumentPicker.pick({
@@ -250,6 +255,7 @@ const NewTask = ({ isOpenTask, onClose, onSave, taskData }: { isOpenTask: boolea
     const closeMenu = () => {
         setTaskMenuOpen(false);
     };
+
 
     return (
         <Modal
@@ -381,18 +387,6 @@ const NewTask = ({ isOpenTask, onClose, onSave, taskData }: { isOpenTask: boolea
                                 />
                             </View>
                         </View>
-                        <View style={styles.comment}>
-                            <MaterialIcon name="chat" size={30} color={"#5f6368"} />
-                            <TextInput
-                                style={[styles.commentText, { height: 60 }]}
-                                value={comment}
-                                onChangeText={setComment}
-                                editable={isOpenTask}
-                                placeholder="Comment"
-                                placeholderTextColor="black"
-                                multiline={true}
-                            />
-                        </View>
                         <View style={styles.reoccurenceTitle}>
                             <MaterialIcon name="all-inclusive" size={28} color={"#5f6368"} />
                             <Dropdown
@@ -414,7 +408,7 @@ const NewTask = ({ isOpenTask, onClose, onSave, taskData }: { isOpenTask: boolea
                                 disable={!isOpenTask}
                                 itemContainerStyle={styles.labelDropdownItemContainer}
                                 itemTextStyle={styles.labelDropdownItemText}
-                                activeColor="#cceeff"
+                                activeColor="lightgrey"
                             />
                         </View>
                         <View style={styles.attachmentContainer}>
@@ -461,7 +455,36 @@ const NewTask = ({ isOpenTask, onClose, onSave, taskData }: { isOpenTask: boolea
                         </Pressable>
                     </Modal>
                 </View>
+                <View style={styles.attachmentContainer}>
+                            <Text style={styles.commentInput}>Activities</Text>
+                            {comments.length > 0 ? (
+                                comments.map((cmt, index) => (
+                                    <View key={index} style={styles.commentItem}>
+                                        <MaterialIcon name="account-circle" size={30} color={"#5f6368"} />
+                                        <Text style={styles.commentText}>{cmt}</Text>
+                                    </View>
+                                ))
+                            ) : (
+                                <Text>No comments yet</Text>
+                            )}
+                        </View>
             </ScrollView>
+            <View style={styles.comment}>
+                <MaterialIcon name="account-circle" size={40} color={"#5f6368"} />
+                <View style={styles.commentContainer}>
+                    <TextInput
+                        style={styles.commentInput}
+                        value={comment}
+                        onChangeText={setComment}
+                        placeholder="Add a comment"
+                        placeholderTextColor={"#5f6368"}
+                        multiline
+                    />
+                    <Pressable onPress={addComment}>
+                        <MaterialIcon name="send" size={30} color={"#5f6368"} />
+                    </Pressable>
+                </View>
+            </View>
         </Modal>
     );
 };
@@ -591,15 +614,15 @@ const styles = StyleSheet.create({
     },
     labelTitle: {
         flexDirection: "column",
-        alignItems: "center",
-        justifyContent: "flex-start",
+        alignItems: "flex-start"
+        , justifyContent: "flex-start",
         width: "93%",
     },
     labelDropdown: {
         height: 50,
         paddingHorizontal: "2%",
         backgroundColor: "#fff",
-        width: "100%",
+        width: "95%",
         flexDirection: "column",
     },
     labelDropdownItemContainer: {
@@ -629,9 +652,10 @@ const styles = StyleSheet.create({
         paddingLeft: "1.5%"
     },
     selectedTextStyle: {
-        fontSize: 18,
+        fontSize: 20,
         color: "black",
-        flexDirection: "column"
+        flexDirection: "column",
+        paddingLeft: "1.5%"
     },
     selectedItemContainer: {
         flexDirection: "column",
@@ -669,21 +693,39 @@ const styles = StyleSheet.create({
         color: "#1a73e8",
     },
     comment: {
-        color: "black",
-        borderWidth: 1,
-        paddingLeft: "3%",
-        marginBottom: "1.5%",
-        backgroundColor: "#fff",
-        borderColor: '#ccc',
         flexDirection: "row",
-        justifyContent: "flex-start",
-        alignItems: "center"
+        alignItems: "center",
+        padding: 10,
+        borderTopWidth: 1,
+        borderColor: "#ccc",
+    },
+    commentContainer: {
+        flexDirection: "row",
+        alignItems: "center",
+        backgroundColor: "#f0f0f0",
+        borderRadius: 50,
+        padding: 10,
+        flex: 1,
+        marginHorizontal: 10,
+    },
+    commentInput: {
+        flex: 1,
+        paddingHorizontal: 10,
+        fontSize: 20,
+        color: "black"
+    },
+    commentItem: {
+        flexDirection: "row",
+        alignItems: "center",
+        padding: 10,
+        backgroundColor: "#f9f9f9",
+        borderRadius: 10,
+        marginVertical: 5,
     },
     commentText: {
-        fontSize: 20,
-        paddingLeft: "3%",
         color: "black",
-        width: "95%",
+        marginLeft: 10,
+        fontSize: 16,
     },
     reoccurenceTitle: {
         flexDirection: "row", // Arrange the label and icon in a row
