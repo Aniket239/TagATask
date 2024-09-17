@@ -1,7 +1,8 @@
 import React, { useState } from "react";
 import { FlatList, Pressable, StyleSheet, Text, TextInput, View } from "react-native";
-import NewTask from "./NewTask";
+import UpdateTask from "./UpdateTask";
 import MaterialIcon from 'react-native-vector-icons/MaterialIcons';
+
 
 interface Task {
     id: string;
@@ -29,6 +30,7 @@ const ToDo: React.FC<ToDoProps> = ({ tasks, onCreateTask, onUpdateTask, onDelete
     const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
     const [selectedTask, setSelectedTask] = useState<Task | null>(null);
     const [taskName, setTaskName] = useState('');
+
 
     const openModal = (task?: Task) => {
         setSelectedTask(task || null);
@@ -63,49 +65,60 @@ const ToDo: React.FC<ToDoProps> = ({ tasks, onCreateTask, onUpdateTask, onDelete
 
     return (
         <View style={styles.toDoContainer}>
-            <Text style={styles.headerText}>To-Do</Text>
-            {tasks.length === 0 ? (
-                <></>
-            ) : (
-                <FlatList
-                    data={tasks}
-                    keyExtractor={(item) => item.id}
-                    renderItem={({ item }) => (
-                        <View style={styles.task}>
-                            <Pressable onPress={() => handleCheckboxPress(item.id)} style={styles.checkbox}>
-                                <MaterialIcon
-                                    name="check-box-outline-blank"
-                                    size={25}
-                                    color="gray"
-                                />
-                            </Pressable>
-                            <Pressable style={styles.taskData} onPress={() => openModal(item)}>
-                                <Text style={styles.taskText}>{item.title}</Text>
-                                {item.dateSet && (
-                                    <Text style={styles.taskText}>{item.dueDate.toLocaleDateString()}</Text>
-                                )}
-                            </Pressable>
-                        </View>
-                    )}
+            <Pressable>
+                <Text style={styles.headerText}>To-Do</Text>
+                {tasks.length === 0 ? (
+                    <></>
+                ) : (
+                    <FlatList
+                        data={tasks}
+                        keyExtractor={(item) => item.id}
+                        renderItem={({ item }) => (
+                            <View style={styles.task}>
+                                <Pressable onPress={() => handleCheckboxPress(item.id)} style={styles.checkbox}>
+                                    <MaterialIcon
+                                        name="check-box-outline-blank"
+                                        size={25}
+                                        color="gray"
+                                    />
+                                </Pressable>
+                                <Pressable style={styles.taskData} onPress={() => openModal(item)}>
+                                    <Text style={styles.taskText}>{item.title}</Text>
+                                    <View style={styles.taskIcons}>
+                                        <Pressable>
+                                            <MaterialIcon name="event" size={30} color={item.dateSet ? "black" : "grey"} />
+                                        </Pressable>
+                                        <Pressable>
+                                            <MaterialIcon name="label-outline" size={30} color={item.dateSet ? "black" : "grey"} />
+                                        </Pressable>
+                                        <Pressable onPress={() => openModal(item)}>
+                                            <MaterialIcon name="edit" size={25} color={item.dateSet ? "black" : "grey"} />
+                                        </Pressable>
+                                        
+                                    </View>
+                                </Pressable>
+                            </View>
+                        )}
+                    />
+                )}
+                <TextInput
+                    editable
+                    multiline
+                    returnKeyType="next"
+                    value={taskName}
+                    onChangeText={setTaskName}
+                    onBlur={handleTaskCreation}
+                    placeholder="+ Add New Task"
+                    placeholderTextColor="black"
+                    style={styles.taskInput}
                 />
-            )}
-            <TextInput
-                editable
-                multiline={false}
-                numberOfLines={1}
-                value={taskName}
-                onChangeText={setTaskName}
-                onBlur={handleTaskCreation}
-                placeholder="+ Add New Task"
-                placeholderTextColor="black"
-                style={styles.taskInput}
-            />
-            <NewTask
-                isOpenTask={isModalOpen}
-                onClose={closeModal}
-                onSave={saveTask}
-                taskData={selectedTask}
-            />
+                <UpdateTask
+                    isOpenTask={isModalOpen}
+                    onClose={closeModal}
+                    onSave={saveTask}
+                    taskData={selectedTask}
+                />
+            </Pressable>
         </View>
     );
 };
@@ -118,7 +131,6 @@ const styles = StyleSheet.create({
         width: "90%",
         height: "97%",
         justifyContent: "flex-start",
-        alignItems: "center",
         borderRadius: 15,
         paddingTop: 25,
         paddingHorizontal: 20,
@@ -138,8 +150,8 @@ const styles = StyleSheet.create({
     },
     task: {
         width: "100%",
-        paddingVertical: 15,
-        paddingHorizontal: "2%",
+        paddingVertical: 10,
+        paddingLeft: "2%",
         backgroundColor: "#ffffff",
         borderRadius: 10,
         marginBottom: 15,
@@ -150,21 +162,29 @@ const styles = StyleSheet.create({
         elevation: 2,
         color: "black",
         flexDirection: "row",
-        justifyContent: "space-between"
+        justifyContent: "flex-start",
+        alignItems: "center"
     },
     checkbox: {
-        width: "10%"
+        width: "7%",
+        marginRight: "2%"
     },
     taskData: {
         width: "89%",
         flexDirection: "row",
         justifyContent: "space-between",
         alignItems: "center",
-        paddingRight: "2%"
+        paddingRight: "2%",
     },
     taskText: {
         fontSize: 18,
+        width: "65%",
         color: "black",
+    },
+    taskIcons: {
+        width: "32%",
+        flexDirection: "row",
+        justifyContent: "space-between",
     },
     taskInput: {
         width: "100%",
