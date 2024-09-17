@@ -11,7 +11,7 @@ interface Task {
     id: string;
     title: string;
     dueDate: Date;  // Use Date object for consistency
-    tag: string[];
+    label: string[];
     recurrence: string | null;
     comment: string[];  // Changed to an array of strings
     fileUri?: string; // Add optional file URI
@@ -27,7 +27,7 @@ const recurrenceData = [
     { label: 'Weekly', value: 'Weekly' },
     { label: 'Monthly', value: 'Monthly' },
 ];
-interface Tag {
+interface Label {
     label: string;
     value: string;
 }
@@ -39,11 +39,11 @@ const NewTask = ({ isOpenTask, onClose, onSave, taskData }: { isOpenTask: boolea
     const [title, setTitle] = useState(taskData?.title || "");
     const [dueDate, setDueDate] = useState<Date>(taskData?.dueDate ? new Date(taskData.dueDate) : defaultDate);
     const [dateSet, setDateSet] = useState<boolean>(taskData?.dateSet || false);
-    const [availableTags, setAvailableTags] = useState<Tag[]>([]);
-    const [filteredTags, setFilteredTags] = useState<Tag[]>(availableTags);
+    const [availableLabels, setAvailableLabels] = useState<Label[]>([]);
+    const [filteredLabels, setFilteredLabels] = useState<Label[]>(availableLabels);
     const [inputValue, setInputValue] = useState<string>("");
-    const [customTag, setCustomTag] = useState(false);
-    const [tag, setTag] = useState<string[]>(taskData?.tag || []);
+    const [customLabel, setCustomLabel] = useState(false);
+    const [label, setLabel] = useState<string[]>(taskData?.label || []);
     const [recurrence, setRecurrence] = useState<string | null>(taskData?.recurrence || null);
     const [comment, setComment] = useState<string>("");  // For input field
     const [comments, setComments] = useState<string[]>(taskData?.comment || []);  // For storing comments
@@ -68,7 +68,7 @@ const NewTask = ({ isOpenTask, onClose, onSave, taskData }: { isOpenTask: boolea
             setTitle(taskData.title);
             setDueDate(new Date(taskData.dueDate));
             setDateSet(taskData.dateSet);
-            setTag(taskData.tag);
+            setLabel(taskData.label);
             setRecurrence(taskData.recurrence);
             setComment(taskData.comment);
             setFileUri(taskData.fileUri);
@@ -78,55 +78,55 @@ const NewTask = ({ isOpenTask, onClose, onSave, taskData }: { isOpenTask: boolea
     }, [taskData]);
 
     useEffect(() => {
-        setFilteredTags(availableTags); // Update filtered tags when availableTags changes
-    }, [availableTags]);
+        setFilteredLabels(availableLabels); // Update filtered labels when availableLabels changes
+    }, [availableLabels]);
 
     const handleSearchChange = (input) => {
         setInputValue(input);
 
-        // Filter the available tags based on the search input
+        // Filter the available labels based on the search input
         if (input) {
-            const filtered = availableTags.filter((tag) =>
-                tag.label.toLowerCase().includes(input.toLowerCase())
+            const filtered = availableLabels.filter((label) =>
+                label.label.toLowerCase().includes(input.toLowerCase())
             );
-            setFilteredTags(filtered);
+            setFilteredLabels(filtered);
         } else {
-            setFilteredTags(availableTags); // Reset when input is cleared
+            setFilteredLabels(availableLabels); // Reset when input is cleared
         }
 
-        const isTagPresent = availableTags.some((tag) => tag.label.toLowerCase() === input.toLowerCase());
-        setCustomTag(!isTagPresent && input !== "");
+        const isLabelPresent = availableLabels.some((label) => label.label.toLowerCase() === input.toLowerCase());
+        setCustomLabel(!isLabelPresent && input !== "");
     };
 
-    const handleAddTag = () => {
-        const newTag = { label: inputValue, value: inputValue };
+    const handleAddLabel = () => {
+        const newLabel = { label: inputValue, value: inputValue };
 
-        // Add the new tag to both availableTags and filteredTags
-        setAvailableTags((prevTags) => [...prevTags, newTag]);
-        setFilteredTags((prevTags) => [...prevTags, newTag]);
+        // Add the new label to both availableLabels and filteredLabels
+        setAvailableLabels((prevLabels) => [...prevLabels, newLabel]);
+        setFilteredLabels((prevLabels) => [...prevLabels, newLabel]);
 
-        // Automatically select the new tag
-        setTag((prevTags) => [...prevTags, inputValue]);
+        // Automatically select the new label
+        setLabel((prevLabels) => [...prevLabels, inputValue]);
 
-        // Reset the search input and the filtered tags after adding the new tag
+        // Reset the search input and the filtered labels after adding the new label
         setInputValue("");
-        setFilteredTags(availableTags); // Reset to show all available tags
-        setCustomTag(false);
+        setFilteredLabels(availableLabels); // Reset to show all available labels
+        setCustomLabel(false);
     };
 
 
     const handleBlur = () => {
-        if (customTag && inputValue.trim() !== "") {
-            handleAddTag();
+        if (customLabel && inputValue.trim() !== "") {
+            handleAddLabel();
         } else {
             setInputValue("");
-            setFilteredTags(availableTags); // Reset to show all tags when input is blurred
+            setFilteredLabels(availableLabels); // Reset to show all labels when input is blurred
         }
     };
     const resetForm = () => {
         setTitle("");
         setDueDate(new Date("2024-01-01"));
-        setTag([]);
+        setLabel([]);
         setRecurrence(null);
         setComment("");
         setFileUri(undefined);
@@ -136,7 +136,7 @@ const NewTask = ({ isOpenTask, onClose, onSave, taskData }: { isOpenTask: boolea
     };
 
     const handleDelete = () => {
-        const task = { title: "", dueDate: new Date(), tag: [], recurrence: null, comment: "", fileUri: "", filenames: [], fileDatas: [], dateSet: false };
+        const task = { title: "", dueDate: new Date(), label: [], recurrence: null, comment: "", fileUri: "", filenames: [], fileDatas: [], dateSet: false };
         onSave(task);
         resetForm();
         onClose();
@@ -161,7 +161,7 @@ const NewTask = ({ isOpenTask, onClose, onSave, taskData }: { isOpenTask: boolea
             title,
             dueDate: dueDate, // Use startDate or dueDate as appropriate
             dateSet: dateSet,
-            tag,
+            label,
             recurrence,
             comment:comments,
             fileUri,
@@ -367,22 +367,22 @@ const NewTask = ({ isOpenTask, onClose, onSave, taskData }: { isOpenTask: boolea
                             </View>
                             <View style={styles.labelTitle}>
                                 <MultiSelect
-                                    style={[styles.labelDropdown, customTag && { borderColor: 'black' }]}
+                                    style={[styles.labelDropdown, customLabel && { borderColor: 'black' }]}
                                     placeholderStyle={styles.placeholderStyle}
                                     selectedTextStyle={styles.selectedTextStyle}
                                     inputSearchStyle={styles.inputSearchStyle}
-                                    data={filteredTags} // Use filteredTags here instead of availableTags
+                                    data={filteredLabels} // Use filteredLabels here instead of availableLabels
                                     search
                                     labelField="label"
                                     valueField="value"
                                     placeholder="Select Label"
                                     searchPlaceholder="Search or create a label"
-                                    value={tag}
-                                    onFocus={() => setCustomTag(false)}
-                                    onBlur={handleBlur}  // Trigger onBlur to create new tag
-                                    onChange={setTag}
+                                    value={label}
+                                    onFocus={() => setCustomLabel(false)}
+                                    onBlur={handleBlur}  // Trigger onBlur to create new label
+                                    onChange={setLabel}
                                     onChangeText={handleSearchChange} // Triggered on search input
-                                    selectedStyle={styles.selectedTagStyle} // Style for selected tags  
+                                    selectedStyle={styles.selectedLabelStyle} // Style for selected labels  
                                     itemTextStyle={styles.labelDropdownItemText}
                                 />
                             </View>
@@ -671,7 +671,7 @@ const styles = StyleSheet.create({
         borderColor: "#ccc",
         borderWidth: 1,
     },
-    selectedTagStyle: {
+    selectedLabelStyle: {
         backgroundColor: "#e0e0e0",
         borderRadius: 10,
         paddingHorizontal: 10,
@@ -679,7 +679,7 @@ const styles = StyleSheet.create({
         marginRight: 5,
         borderWidth: 0
     },
-    addTagButton: {
+    addLabelButton: {
         padding: 10,
         backgroundColor: "#f0f0f0",
         alignItems: "center",
@@ -688,7 +688,7 @@ const styles = StyleSheet.create({
         marginTop: 10,
         width: "90%",
     },
-    addTagText: {
+    addLabelText: {
         fontSize: 16,
         color: "#1a73e8",
     },

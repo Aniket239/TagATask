@@ -6,7 +6,7 @@ interface Task {
     id: string;
     title: string;
     dueDate: Date;
-    tag: string[];
+    label: string[];
     recurrence: string | null;
     comment: string;
     fileUri?: string;

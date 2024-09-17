@@ -11,7 +11,7 @@ interface Task {
     id: string;
     title: string;
     dueDate: Date;  // Use Date object for consistency
-    tag: string[];
+    label: string[];
     recurrence: string | null;
     comment: string[];  // Changed to an array of strings
     fileUri?: string; // Add optional file URI
@@ -31,7 +31,7 @@ const Home = () => {
                 title: title.trim(),
                 dueDate: new Date(),
                 dateSet: false,
-                tag: [],
+                label: [],
                 recurrence: null,
                 comment: [],
                 filenames: [],
