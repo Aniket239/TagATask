@@ -14,8 +14,9 @@ export default Done;
 
 const styles = StyleSheet.create({
     doneContainer: {
-        width: "100%",
-        height: "100%",
+        backgroundColor: "#f0f0f0",
+        width: "98%",
+        height: "97%",
         justifyContent: "flex-start",
         alignItems: "center",
         borderRadius: 15,

@@ -7,11 +7,11 @@ const ToolNavbar = () => {
         <View style={styles.toolbar}>
             <View style={styles.filter}>
                 <Text style={styles.toolbarText}>Filter</Text>
-                <MaterialIcon name="filter-list" color={"black"} size={25} />
+                <MaterialIcon name="filter-list" color={"#5F6368"} size={25} />
             </View>
             <View style={styles.sort}>
                 <Text style={styles.toolbarText}>Sort</Text>
-                <MaterialIcon name="swap-vert" color={"black"} size={25} />
+                <MaterialIcon name="swap-vert" color={"#5F6368"} size={25} />
             </View>
         </View>
     )
