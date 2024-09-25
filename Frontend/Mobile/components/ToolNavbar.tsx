@@ -1,19 +1,46 @@
 import React from "react";
-import { Text, View } from "react-native";
+import { Text, View, StyleSheet } from "react-native";
+import MaterialIcon from 'react-native-vector-icons/MaterialIcons';
 
-const ToolNavbar = ()=>{
+const ToolNavbar = () => {
     return (
-        <View style={{
-            backgroundColor: "white",
-            width: "100%",
-            height:"7%",
-            justifyContent: "flex-start",
-            padding:20,
-            marginBottom: 20,
-        }}>
-            <Text style={{color:'black'}}>Filter</Text>
+        <View style={styles.toolbar}>
+            <View style={styles.filter}>
+                <Text style={styles.toolbarText}>Filter</Text>
+                <MaterialIcon name="filter-list" color={"black"} size={25} />
+            </View>
+            <View style={styles.sort}>
+                <Text style={styles.toolbarText}>Sort</Text>
+                <MaterialIcon name="swap-vert" color={"black"} size={25} />
+            </View>
         </View>
     )
 }
+
+const styles = StyleSheet.create({
+    toolbar: {
+        backgroundColor: "white",
+        width: "100%",
+        height: "7%",
+        flexDirection: "row",
+        justifyContent: "flex-start",
+        alignItems: "center",
+        paddingHorizontal: "5%",
+        marginBottom: 20,
+    },
+    toolbarText: {
+        color: 'black',
+        fontSize: 20,
+    },
+    filter:{
+        flexDirection: "row",
+        alignItems: "center",
+        marginRight: "3%"
+    },
+    sort:{
+        flexDirection: "row",
+        alignItems: "center",
+    }
+});
 
 export default ToolNavbar;

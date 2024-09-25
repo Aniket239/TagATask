@@ -2,49 +2,10 @@ import React from "react";
 import { View, FlatList, Text, StyleSheet, Pressable } from "react-native";
 import MaterialIcon from 'react-native-vector-icons/MaterialIcons';
 
-interface Task {
-    id: string;
-    title: string;
-    dueDate: Date;
-    tag: string[];
-    recurrence: string | null;
-    comment: string;
-    fileUri?: string;
-    filenames: string[];
-    fileDatas: { name: string, data: string }[];
-    dateSet: boolean;
-    status: "todo" | "tobeapproved" | "done";
-}
-
-interface DoneProps {
-    tasks: Task[];
-}
-
-const Done: React.FC<DoneProps> = ({ tasks }) => {
-    console.log('====================================');
-    console.log(tasks);
-    console.log('====================================');
-
+const Done = () => {
     return (
         <View style={styles.doneContainer}>
             <Text style={styles.headerText}>Done</Text>
-            {tasks.length === 0 ? (
-                <Text style={styles.noTaskText}>No tasks done yet</Text>
-            ) : (
-                <FlatList
-                    data={tasks}
-                    keyExtractor={(item) => item.id}
-                    renderItem={({ item }) => (
-                        <View style={styles.task}>
-                            <Text style={styles.taskText}>{item.title}</Text>
-                            {item.dateSet && (
-                                <Text style={styles.taskText}>{item.dueDate.toLocaleDateString()}</Text>
-                            )}
-                        </View>
-                    )}
-                />
-
-            )}
         </View>
     );
 };
@@ -53,9 +14,8 @@ export default Done;
 
 const styles = StyleSheet.create({
     doneContainer: {
-        backgroundColor: "#f0f0f0",
-        width: "90%",
-        height: "97%",
+        width: "100%",
+        height: "100%",
         justifyContent: "flex-start",
         alignItems: "center",
         borderRadius: 15,

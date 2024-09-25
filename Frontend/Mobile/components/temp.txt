@@ -1,3 +1,18 @@
+interface Task {
+    id: string;
+    title: string;
+    dueDate: Date;
+    label: string[];
+    recurrence: string | null;
+    comment: string;
+    fileUri?: string;
+    filenames: string[];
+    fileDatas: { name: string, data: string }[];
+    dateSet: boolean;
+    status: "todo" | "tobeapproved" | "done";
+}    
+    
+    
     startDate: Date;  // Use Date object for consistency
 
 

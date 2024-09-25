@@ -2,57 +2,12 @@ import React from "react";
 import { View, FlatList, Pressable, Text, StyleSheet } from "react-native";
 import MaterialIcon from 'react-native-vector-icons/MaterialIcons';
 
-interface Task {
-    id: string;
-    title: string;
-    dueDate: Date;
-    label: string[];
-    recurrence: string | null;
-    comment: string;
-    fileUri?: string;
-    filenames: string[];
-    fileDatas: { name: string, data: string }[];
-    dateSet: boolean;
-    status: "todo" | "tobeapproved" | "done";
-}
 
-interface ToBeApprovedProps {
-    tasks: Task[];
-    onStatusChange: (id: string) => void;  // Change status to "done"
-    onDeleteTask: (taskId: string) => void;
-}
-
-const ToBeApproved: React.FC<ToBeApprovedProps> = ({ tasks, onStatusChange, onDeleteTask }) => {
-    const handleCheckboxPress = (id: string) => {
-        onStatusChange(id);  // Move task to "done"
-    };
+const ToBeApproved = () => {
 
     return (
         <View style={styles.toBeApprovedContainer}>
-            <Text style={styles.headerText}>To Be Approved</Text>
-            {tasks.length === 0 ? (
-                <Text style={styles.noTaskText}>No tasks to be approved</Text>
-            ) : (
-                <FlatList
-                    data={tasks}
-                    keyExtractor={(item) => item.id}
-                    renderItem={({ item }) => (
-                        <View style={styles.task}>
-                            <Pressable onPress={() => handleCheckboxPress(item.id)} style={styles.checkbox}>
-                                <MaterialIcon
-                                    name="check-circle"
-                                    size={25}
-                                    color="green"
-                                />
-                            </Pressable>
-                            <Text style={styles.taskText}>{item.title}</Text>
-                            {item.dateSet && (
-                                <Text style={styles.taskText}>{item.dueDate.toLocaleDateString()}</Text>
-                            )}
-                        </View>
-                    )}
-                />
-            )}
+            <Text style={styles.headerText}>Follow Up</Text>
         </View>
     );
 };
@@ -61,9 +16,8 @@ export default ToBeApproved;
 
 const styles = StyleSheet.create({
     toBeApprovedContainer: {
-        backgroundColor: "#f0f0f0",
-        width: "90%",
-        height: "97%",
+        width: "100%",
+        height: "100%",
         justifyContent: "flex-start",
         alignItems: "center",
         borderRadius: 15,

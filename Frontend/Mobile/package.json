@@ -10,6 +10,7 @@
     "test": "jest"
   },
   "dependencies": {
+    "accordion-collapse-react-native": "^1.1.1",
     "axios": "^1.7.7",
     "express": "^4.21.0",
     "react": "18.2.0",
