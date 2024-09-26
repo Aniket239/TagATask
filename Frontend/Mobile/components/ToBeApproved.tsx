@@ -1,173 +1,237 @@
 import React, { useState } from "react";
-import { Text, StyleSheet, View, Pressable, ScrollView } from "react-native";
-import Accordion from 'react-native-collapsible/Accordion';
-import MaterialIcon from 'react-native-vector-icons/MaterialIcons';
+import {
+  Text,
+  StyleSheet,
+  View,
+  Pressable,
+  LayoutAnimation,
+  UIManager,
+  Platform,
+} from "react-native";
+import MaterialIcon from "react-native-vector-icons/MaterialIcons";
+import DraggableFlatList from "react-native-draggable-flatlist";
 
-const ToBeApproved = () => {
-    const EXECUTE = [
-        {
-            title: "For Execution",
-            content: ["task 1", "task 2", "task 3", "task 4", "task 1", "task 2", "task 3", "task 4", "task 1", "task 2", "task 3", "task 4", "task 1", "task 2", "task 3", "task 4", "task 1", "task 2", "task 3", "task 4", "task 1", "task 2", "task 3", "task 4"]
-        }
-    ]
-    const APPROVE = [
-        {
-            title: "For Approval",
-            content: ["task 1", "task 2", "task 3", "task 4", "task 1", "task 2", "task 3", "task 4", "task 1", "task 2", "task 3", "task 4", "task 1", "task 2", "task 3", "task 4"]
-        }
-    ]
-
-    const [isActive, setIsActive] = useState(false);
-    return (
-        <>
-            <View style={styles.todoContainer}>
-                <Text style={styles.todoHeader}>Follow up</Text>
-                <View style={styles.accordion} >
-                    <Pressable style={styles.header}>
-                        <Text style={styles.headerText} >For Execution</Text>
-                        <MaterialIcon name={isActive ? "arrow-drop-up" : "arrow-drop-down"} color={"#5F6368"} size={50} />
-                    </Pressable>
-                    <ScrollView>
-                        {EXECUTE[0].content.map((item,index) => (
-                            <Text key={index}>{item}</Text>
-                        ))}
-                    </ScrollView>
-                </View>
-                <View style={styles.accordion}>
-                    <Pressable style={styles.header}>
-                        <Text style={styles.headerText}>For Approval</Text>
-                        <MaterialIcon name={isActive ? "arrow-drop-up" : "arrow-drop-down"} color={"#5F6368"} size={50} />
-                    </Pressable>
-                </View>
-            </View>
-        </>
-    );
+// Enable LayoutAnimation for Android
+if (
+  Platform.OS === "android" &&
+  UIManager.setLayoutAnimationEnabledExperimental
+) {
+  UIManager.setLayoutAnimationEnabledExperimental(true);
 }
-const styles = StyleSheet.create({
-    todoContainer: {
-        backgroundColor: "#f0f0f0",
-        width: "98%",
-        height: "100%",
-        justifyContent: "flex-start",
-        alignItems: "center",
-        borderRadius: 15,
-        paddingTop: 15,
-        paddingHorizontal: 2,
-        shadowColor: "#000",
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.1,
-        shadowRadius: 4,
-        elevation: 3,
+
+// Reusable Accordion Component
+const Accordion = ({ title, tasks }) => {
+  // State to manage accordion open/close
+  const [isOpen, setIsOpen] = useState(false);
+
+  // Convert tasks to objects with unique ids
+  const initialData = tasks.map((task, index) => ({
+    id: `${title}-${index + 1}`,
+    title: task,
+  }));
+
+  // State to manage draggable list data
+  const [data, setData] = useState(initialData);
+
+  // Toggle accordion with animation
+  const toggleAccordion = () => {
+    LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
+    setIsOpen(!isOpen);
+  };
+
+  // Render each item in the draggable list
+  const renderItem = ({ item, index, drag, isActive }) => {
+    return (
+      <Pressable
+        style={[
+          styles.itemContainer,
+          { backgroundColor: isActive ? "#e0e0e0" : "#fff" },
+        ]}
+        // Remove onLongPress from the entire item
+      >
+        {/* Drag Handle */}
+        <Pressable onLongPress={drag} style={styles.handleContainer}>
+          <MaterialIcon
+            name="drag-indicator"
+            size={24}
+            color="grey"
+            style={styles.icon}
+          />
+        </Pressable>
+        {/* Task Title */}
+        <Text style={styles.itemText}>{item.title}</Text>
+      </Pressable>
+    );
+  };
+
+  return (
+    <View style={styles.accordionContainer}>
+      {/* Accordion Header */}
+      <Pressable style={styles.header} onPress={toggleAccordion}>
+        <Text style={styles.headerText}>{title}</Text>
+        <MaterialIcon
+          name={isOpen ? "expand-less" : "expand-more"}
+          size={24}
+          color="#555"
+        />
+      </Pressable>
+
+      {/* Accordion Content */}
+      {isOpen && (
+        <View style={styles.content}>
+          <DraggableFlatList
+            data={data}
+            renderItem={renderItem}
+            keyExtractor={(item) => item.id}
+            onDragEnd={({ data }) => setData(data)} // Update data on drag end
+            // Improve performance with initialNumToRender
+            initialNumToRender={10}
+            // Add some padding at the bottom
+            contentContainerStyle={{ paddingBottom: 20 }}
+            // Ensure vertical scrolling only
+            horizontal={false}
+            scrollEnabled={true}
+          />
+        </View>
+      )}
+    </View>
+  );
+};
+
+// Main Component Rendering Two Accordions
+const ToBeApproved = () => {
+  const EXECUTE = [
+    {
+      title: "Execute",
+      content: [
+        "Execute Task 1",
+        "Execute Task 2",
+        "Execute Task 3",
+        "Execute Task 4",
+        "Execute Task 5",
+        "Execute Task 6",
+        "Execute Task 7",
+        "Execute Task 8",
+        "Execute Task 9",
+        "Execute Task 10",
+        "Execute Task 11",
+        "Execute Task 12",
+        "Execute Task 13",
+        "Execute Task 14",
+        "Execute Task 15",
+        "Execute Task 16",
+        "Execute Task 17",
+        "Execute Task 18",
+        "Execute Task 19",
+        "Execute Task 20",
+        "Execute Task 21",
+        "Execute Task 22",
+        "Execute Task 23",
+        "Execute Task 24",
+      ],
     },
-    todoHeader: {
-        color: '#333',
-        fontSize: 23,
-        marginBottom: 5,
-        fontWeight: 'bold',
-        textAlign: 'left',
-        width: '100%',
-        marginLeft: "5%"
+  ];
+
+  const APPROVE = [
+    {
+      title: "Approve",
+      content: [
+        "Approve Task 1",
+        "Approve Task 2",
+        "Approve Task 3",
+        "Approve Task 4",
+        "Approve Task 5",
+        "Approve Task 6",
+        "Approve Task 7",
+        "Approve Task 8",
+        "Approve Task 9",
+        "Approve Task 10",
+        "Approve Task 11",
+        "Approve Task 12",
+        "Approve Task 13",
+        "Approve Task 14",
+        "Approve Task 15",
+        "Approve Task 16",
+      ],
     },
-    accordion: {
-        width: '100%',
-        marginBottom: 20
-    },
-    accordionSection: {
-        marginBottom: 10,
-    },
-    headerText: {
-        color: '#333',
-        fontSize: 20,
-        fontWeight: 'bold',
-        textAlign: 'left',
-    },
-    header: {
-        backgroundColor: '#fff',
-        padding: 5,
-        paddingLeft: 15,
-        marginVertical: 3,
-        marginHorizontal: 10,
-        borderRadius: 10,
-        // iOS shadow
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 1 },
-        shadowOpacity: 0.1,
-        shadowRadius: 2,
-        // Android shadow
-        elevation: 2,
-        flexDirection: "row",
-        alignItems: "center",
-        justifyContent: "space-between"
-    },
-    activeHeader: {
-        backgroundColor: '#fff',
-        padding: 5,
-        paddingLeft: 15,
-        marginVertical: 3,
-        marginHorizontal: 10,
-        borderTopStartRadius: 10,
-        borderTopEndRadius: 10,
-        // iOS shadow
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 1 },
-        shadowOpacity: 0.1,
-        shadowRadius: 2,
-        // Android shadow
-        elevation: 2,
-        flexDirection: "row",
-        alignItems: "center",
-        justifyContent: "space-between",
-    },
-    contentContainer: {
-        flex: 1,
-        paddingBottom: 10,
-        backgroundColor: '#fff',
-        marginHorizontal: 10,
-        marginBottom: 20,
-        borderBottomLeftRadius: 12,
-        borderBottomRightRadius: 12,
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 1 },
-        shadowOpacity: 0.1,
-        shadowRadius: 2,
-        // Android shadow
-        elevation: 2,
-    },
-    contentCard: {
-        paddingHorizontal: "2%",
-        paddingVertical: "2%",
-        flexDirection: "row",
-        alignItems: "center",
-        justifyContent: "space-between",
-        width: "100%",
-        margin: "auto",
-        borderBottomWidth: 1,
-        borderBottomColor: "lightgrey"
-    },
-    contentText: {
-        color: '#333',
-        fontSize: 16,
-        lineHeight: 22,
-        width: "68%",
-    },
-    approveContentText: {
-        color: '#333',
-        fontSize: 16,
-        lineHeight: 22,
-        width: "72%"
-    },
-    contentIcons: {
-        flexDirection: "row",
-        alignItems: "center",
-        justifyContent: "space-between",
-        width: "23%"
-    },
-    approveContentIcons: {
-        flexDirection: "row",
-        alignItems: "center",
-        justifyContent: "space-between",
-        width: "17%"
-    }
-});
+  ];
+
+  return (
+    <View style={styles.container}>
+      {EXECUTE.map((section) => (
+        <Accordion
+          key={section.title}
+          title={section.title}
+          tasks={section.content}
+        />
+      ))}
+      {APPROVE.map((section) => (
+        <Accordion
+          key={section.title}
+          title={section.title}
+          tasks={section.content}
+        />
+      ))}
+    </View>
+  );
+};
 
 export default ToBeApproved;
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    padding: 16,
+    backgroundColor: "#f2f2f2", // Light background for contrast
+  },
+  accordionContainer: {
+    marginBottom: 16, // Space between accordions
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: "#ccc",
+    backgroundColor: "#fff",
+    // Add shadow for iOS
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    // Add elevation for Android
+    elevation: 2,
+  },
+  header: {
+    flexDirection: "row",
+    padding: 16,
+    justifyContent: "space-between",
+    alignItems: "center",
+    backgroundColor: "#f0f0f0", // Slightly lighter for better visibility
+  },
+  headerText: {
+    fontSize: 18,
+    fontWeight: "600",
+    color: "#000", // Black text
+  },
+  content: {
+    maxHeight: 400, // Limit the height to prevent overflow
+  },
+  itemContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    padding: 5,
+    marginVertical: 6,
+    borderRadius: 6,
+    borderBottomWidth: 1,
+    borderBottomColor: "#ddd",
+    backgroundColor: "#fff",
+  },
+  handleContainer: {
+    padding: 4, // Increase touch area for better usability
+  },
+  icon: {
+    marginRight: 16,
+  },
+  itemText: {
+    fontSize: 16,
+    color: "#000", // Black text
+    flex: 1, // Allow text to take up remaining space
+  },
+});
