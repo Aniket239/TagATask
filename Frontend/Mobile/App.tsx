@@ -9,7 +9,7 @@ const App = () => {
   const [isLoggedIn, setIsLoggedIn] = useState(false); // State to manage login status
 
   const handleLogin = (username: string, password: string): boolean => {
-    if (username === '1234' && password === '1234') {
+    if (username === '' && password === '') {
       setIsLoggedIn(true); 
       return true;
     } else {
