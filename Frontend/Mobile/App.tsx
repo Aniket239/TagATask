@@ -1,4 +1,6 @@
 import React, { useState } from 'react';
+import { Provider } from 'react-redux';
+import store from './Redux/store'; // Adjust the path as needed
 import Navbar from './components/Navbar';
 import Home from './pages/Home';
 import Login from './pages/Login';
@@ -10,7 +12,7 @@ const App = () => {
 
   const handleLogin = (username: string, password: string): boolean => {
     if (username === '' && password === '') {
-      setIsLoggedIn(true); 
+      setIsLoggedIn(true);
       return true;
     } else {
       return false;
@@ -18,9 +20,12 @@ const App = () => {
   };
 
   return (
-    <View style={{ flex: 1, backgroundColor: 'white' }}>
-      {isLoggedIn ? <><Navbar /><Home /></> : <Login onLogin={handleLogin} />}
-    </View>
+    <Provider store={store}>
+      <View style={{ flex: 1, backgroundColor: 'white' }}>
+        {isLoggedIn ? <><Navbar /><Home /></> : <Login onLogin={handleLogin} />}
+      </View>
+    </Provider>
+
   );
 };
 

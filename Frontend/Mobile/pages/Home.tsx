@@ -5,12 +5,14 @@ import ToBeApproved from "../components/ToBeApproved";
 import Done from "../components/Done";
 import ToolNavbar from "../components/ToolNavbar";
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
+import {useSelector } from "react-redux";
 
 const { width } = Dimensions.get("window");
 
 const Home = () => {
-    const [isDragging, setIsDragging] = useState(false);
 
+    const scrollStatus = useSelector((state)=>state.scrolling.value)
+    console.log(scrollStatus);
 
     return (
         <>
@@ -20,7 +22,7 @@ const Home = () => {
                 pagingEnabled
                 showsHorizontalScrollIndicator={false}
                 keyboardDismissMode='on-drag'
-                scrollEnabled={!isDragging} // Disable horizontal scroll when dragging
+                scrollEnabled={scrollStatus} // Disable horizontal scroll when dragging
                 style={{ flex: 1 }}
             >
                 <View style={{ width: width, justifyContent: 'flex-start', alignItems: 'center' }}>
