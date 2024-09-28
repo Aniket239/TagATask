@@ -8,12 +8,15 @@ import {
     UIManager,
     Platform,
     SafeAreaView,
+    Modal,
+    TouchableOpacity,
 } from "react-native";
 import MaterialIcon from "react-native-vector-icons/MaterialIcons";
 import DraggableFlatList from "react-native-draggable-flatlist";
 import { useDispatch } from "react-redux";
 import { startScrolling, stopScrolling } from "../Redux/Slice/DragAndDrop";
-
+import { ScrollView } from "react-native-gesture-handler";
+import DateTimePicker from '@react-native-community/datetimepicker';
 
 // Enable LayoutAnimation for Android
 if (
@@ -27,7 +30,6 @@ if (
 const Accordion = ({ title, tasks }) => {
     const dispatch = useDispatch();
 
-
     // State to manage accordion open/close
     const [isOpen, setIsOpen] = useState(true);
 
@@ -35,11 +37,19 @@ const Accordion = ({ title, tasks }) => {
     const initialData = tasks.map((task, index) => ({
         id: `${title}-${index + 1}`,
         title: task,
+        dueDate: null, // Initialize dueDate as null
     }));
 
     // State to manage draggable list data
     const [data, setData] = useState(initialData);
     console.log(data);
+
+    // State to manage modal visibility and selected task
+    const [modalVisible, setModalVisible] = useState(false);
+    const [selectedTaskId, setSelectedTaskId] = useState(null);
+    const [selectedDate, setSelectedDate] = useState(new Date());
+    const [showDatePicker, setShowDatePicker] = useState(false);
+    const [showTimePicker, setShowTimePicker] = useState(false);
 
     // Toggle accordion with animation
     const toggleAccordion = () => {
@@ -47,8 +57,61 @@ const Accordion = ({ title, tasks }) => {
         setIsOpen(!isOpen);
     };
 
-    // Render each item in the draggable list
+    // Handle date change
+    const onChangeDate = (event, selectedDate) => {
+        setModalVisible(false);
+        setShowDatePicker(false);
+        if (event.type === "set" && selectedDate) {
+            setSelectedDate(selectedDate);
+            // Update the dueDate for the selected task
+            setData(prevData =>
+                prevData.map(task =>
+                    task.id === selectedTaskId
+                        ? { ...task, dueDate: selectedDate }
+                        : task
+                )
+            );
+        }
+    };
+    const onChangeTime = (event, selectedDate) => {
+        setModalVisible(false);
+        setShowTimePicker(false);
+        if (event.type === "set" && selectedDate) {
+            setSelectedDate(selectedDate);
+            // Update the dueDate for the selected task
+            setData(prevData =>
+                prevData.map(task =>
+                    task.id === selectedTaskId
+                        ? { ...task, dueDate: selectedDate }
+                        : task
+                )
+            );
+        }
+    };
 
+    // Open Due Date Modal
+    const openDueDateTimeModal = () => {
+        setModalVisible(true);
+    };
+    const openDueDate = (taskId) => {
+        setModalVisible(true);
+        setSelectedTaskId(taskId);
+        setShowDatePicker(true);
+    };
+    const openDueTime = (taskId) => {
+        setModalVisible(true);
+        setSelectedTaskId(taskId);
+        setShowDatePicker(true);
+    };
+
+    // Close Modal
+    const closeModal = () => {
+        setModalVisible(false);
+        setSelectedTaskId(null);
+        setShowDatePicker(false);
+    };
+
+    // Render each item in the draggable list
     const renderItem = ({ item, index, drag, isActive }) => {
         return (
             <Pressable
@@ -56,10 +119,8 @@ const Accordion = ({ title, tasks }) => {
                     styles.itemContainer,
                     { backgroundColor: isActive ? "#e0e0e0" : "#fff" },
                 ]}
-            // Remove onLongPress from the entire item
             >
-                {/* Drag Handle */}
-                <Pressable onLongPress={drag} style={styles.handleContainer} delayLongPress={20} >
+                <Pressable onPressIn={drag} style={styles.handleContainer}>
                     <MaterialIcon
                         name="drag-indicator"
                         size={30}
@@ -70,9 +131,15 @@ const Accordion = ({ title, tasks }) => {
                 <MaterialIcon name="check-box-outline-blank" size={27} color={"grey"} style={styles.icon} />
                 <Text style={styles.itemText}>{item.title}</Text>
                 <View style={styles.icons}>
-                    <MaterialIcon name="event" size={27} color={"grey"} />
-                    <MaterialIcon name="label-outline" size={27} color={"grey"} />
-                    <MaterialIcon name="edit" size={27} color={"grey"} />
+                    <Pressable onPress={openDueDateTimeModal}>
+                        <MaterialIcon name="event" size={27} color={"grey"} />
+                    </Pressable>
+                    <Pressable>
+                        <MaterialIcon name="label-outline" size={27} color={"grey"} />
+                    </Pressable>
+                    <Pressable>
+                        <MaterialIcon name="edit" size={27} color={"grey"} />
+                    </Pressable>
                 </View>
             </Pressable>
         );
@@ -101,17 +168,57 @@ const Accordion = ({ title, tasks }) => {
                             setData(data);
                             dispatch(startScrolling())
                         }} // Update data on drag end
-                        // Improve performance with initialNumToRender
                         initialNumToRender={10}
-                        // Add some padding at the bottom
-                        contentContainerStyle={{backgroundColor: "darkgrey" }}
-                        // Ensure vertical scrolling only
+                        contentContainerStyle={{ backgroundColor: "darkgrey" }}
                         horizontal={false}
                         scrollEnabled={true}
                         onDragBegin={() => dispatch(stopScrolling())}
                     />
                 </View>
             )}
+
+            {/* Due Date Modal */}
+            <Modal
+                transparent={true}
+                animationType="fade"
+                visible={modalVisible}
+                onRequestClose={closeModal}
+            >
+                <View style={styles.modalOverlay}>
+                    <View>
+                        <Text>Due Date</Text>
+                        <Text></Text>
+                        <View>
+                            <Pressable>
+                                <Text>Cancel</Text>
+                            </Pressable>
+                            <Pressable>
+                                <Text>Done</Text>
+                            </Pressable>
+                        </View>
+                    </View>
+                    {showDatePicker && (
+                        <>
+                            <DateTimePicker
+                                value={selectedDate}
+                                mode="date"
+                                display="default"
+                                onChange={onChangeDate}
+                                positiveButton={{ label: 'Set Due Date' }}
+                            />
+                        </>
+                    )}
+                    {showTimePicker && (
+                        <DateTimePicker
+                            value={selectedDate}
+                            mode="time"
+                            display="default"
+                            onChange={onChangeTime}
+                            positiveButton={{ label: 'Set Due Time' }}
+                        />
+                    )}
+                </View>
+            </Modal>
         </View>
     );
 };
@@ -176,21 +283,23 @@ const ToDo = () => {
 
     return (
         <View style={styles.container}>
-            <Text style={styles.headerTitle}>To Do</Text>
-            {EXECUTE.map((section) => (
-                <Accordion
-                    key={section.title}
-                    title={section.title}
-                    tasks={section.content}
-                />
-            ))}
-            {APPROVE.map((section) => (
-                <Accordion
-                    key={section.title}
-                    title={section.title}
-                    tasks={section.content}
-                />
-            ))}
+            <Text style={styles.headerTitle}>To-Do</Text>
+            <ScrollView>
+                {EXECUTE.map((section) => (
+                    <Accordion
+                        key={section.title}
+                        title={section.title}
+                        tasks={section.content}
+                    />
+                ))}
+                {APPROVE.map((section) => (
+                    <Accordion
+                        key={section.title}
+                        title={section.title}
+                        tasks={section.content}
+                    />
+                ))}
+            </ScrollView>
         </View>
     );
 };
@@ -200,14 +309,14 @@ export default ToDo;
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        padding: 16,
+        padding: 2,
         backgroundColor: "#f2f2f2", // Light background for contrast
     },
     headerTitle: {
         fontSize: 24,
         fontWeight: "600",
         color: "#000", // Black text
-        marginBottom: 10
+        margin: 10
     },
     accordionContainer: {
         marginBottom: 16, // Space between accordions
@@ -237,13 +346,15 @@ const styles = StyleSheet.create({
         color: "#000", // Black text
     },
     content: {
-        height: 600, // Limit the height to prevent overflow
+        maxHeight: 600, // Limit the height to prevent overflow
     },
     itemContainer: {
         flexDirection: "row",
         alignItems: "center",
         borderBottomWidth: 1,
         borderBottomColor: "#ddd",
+        paddingVertical: 10,
+        paddingHorizontal: 15,
     },
     handleContainer: {
         paddingLeft: 5, // Increase touch area for better usability
@@ -254,13 +365,45 @@ const styles = StyleSheet.create({
     },
     itemText: {
         fontSize: 16,
-        color: "#000", // Black text
+        color: "black", // Black text
         flex: 1, // Allow text to take up remaining space
+        marginLeft: 5,
     },
     icons: {
         width: "25%",
         flexDirection: "row",
         justifyContent: "space-between",
         paddingRight: 10
-    }
+    },
+    // Modal styles
+    modalOverlay: {
+        flex: 1,
+        justifyContent: "center",
+        alignItems: "center",
+        backgroundColor: "rgba(0,0,0,0.5)",
+    },
+    modalContent: {
+        width: "80%",
+        backgroundColor: "#fff",
+        borderRadius: 10,
+        padding: 20,
+        alignItems: "center",
+    },
+    modalTitle: {
+        fontSize: 20,
+        fontWeight: "600",
+        marginBottom: 20,
+        color: "black",
+    },
+    closeButton: {
+        marginTop: 20,
+        backgroundColor: "#2196F3",
+        paddingVertical: 10,
+        paddingHorizontal: 20,
+        borderRadius: 5,
+    },
+    closeButtonText: {
+        color: "#fff",
+        fontSize: 16,
+    },
 });
