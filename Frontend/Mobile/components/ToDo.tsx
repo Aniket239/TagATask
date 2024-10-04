@@ -184,10 +184,10 @@ const Accordion = ({ title, tasks }) => {
                 visible={modalVisible}
                 onRequestClose={closeModal}
             >
-                <View style={styles.modalOverlay}>
+                <View style={styles.dateModalOverlay}>
                     <View>
                         <Text>Due Date</Text>
-                        <Text></Text>
+                        <Text>{selectedDate.toLocaleDateString}</Text>
                         <View>
                             <Pressable>
                                 <Text>Cancel</Text>
@@ -346,19 +346,16 @@ const styles = StyleSheet.create({
         color: "#000", // Black text
     },
     content: {
-        maxHeight: 600, // Limit the height to prevent overflow
+        maxHeight: 500, // Limit the height to prevent overflow
     },
     itemContainer: {
         flexDirection: "row",
         alignItems: "center",
         borderBottomWidth: 1,
         borderBottomColor: "#ddd",
-        paddingVertical: 10,
-        paddingHorizontal: 15,
     },
     handleContainer: {
-        paddingLeft: 5, // Increase touch area for better usability
-        paddingVertical: 8,
+        paddingVertical: '1%',
     },
     icon: {
         marginRight: 1,
@@ -376,7 +373,7 @@ const styles = StyleSheet.create({
         paddingRight: 10
     },
     // Modal styles
-    modalOverlay: {
+    dateModalOverlay: {
         flex: 1,
         justifyContent: "center",
         alignItems: "center",
