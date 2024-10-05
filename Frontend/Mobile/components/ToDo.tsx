@@ -7,9 +7,7 @@ import {
     LayoutAnimation,
     UIManager,
     Platform,
-    SafeAreaView,
     Modal,
-    TouchableOpacity,
 } from "react-native";
 import MaterialIcon from "react-native-vector-icons/MaterialIcons";
 import DraggableFlatList from "react-native-draggable-flatlist";
@@ -18,33 +16,16 @@ import { startScrolling, stopScrolling } from "../Redux/Slice/DragAndDrop";
 import { ScrollView } from "react-native-gesture-handler";
 import DateTimePicker from '@react-native-community/datetimepicker';
 
-// Enable LayoutAnimation for Android
-if (
-    Platform.OS === "android" &&
-    UIManager.setLayoutAnimationEnabledExperimental
-) {
-    UIManager.setLayoutAnimationEnabledExperimental(true);
-}
-
-// Reusable Accordion Component
 const Accordion = ({ title, tasks }) => {
     const dispatch = useDispatch();
-
-    // State to manage accordion open/close
     const [isOpen, setIsOpen] = useState(true);
-
-    // Convert tasks to objects with unique ids
     const initialData = tasks.map((task, index) => ({
         id: `${title}-${index + 1}`,
         title: task,
         dueDate: null, // Initialize dueDate as null
     }));
-
-    // State to manage draggable list data
     const [data, setData] = useState(initialData);
     console.log(data);
-
-    // State to manage modal visibility and selected task
     const [modalVisible, setModalVisible] = useState(false);
     const [selectedTaskId, setSelectedTaskId] = useState(null);
     const [selectedDate, setSelectedDate] = useState(new Date());
@@ -59,7 +40,6 @@ const Accordion = ({ title, tasks }) => {
 
     // Handle date change
     const onChangeDate = (event, selectedDate) => {
-        setModalVisible(false);
         setShowDatePicker(false);
         if (event.type === "set" && selectedDate) {
             setSelectedDate(selectedDate);
@@ -74,7 +54,6 @@ const Accordion = ({ title, tasks }) => {
         }
     };
     const onChangeTime = (event, selectedDate) => {
-        setModalVisible(false);
         setShowTimePicker(false);
         if (event.type === "set" && selectedDate) {
             setSelectedDate(selectedDate);
@@ -101,7 +80,11 @@ const Accordion = ({ title, tasks }) => {
     const openDueTime = (taskId) => {
         setModalVisible(true);
         setSelectedTaskId(taskId);
-        setShowDatePicker(true);
+        setShowTimePicker(true);
+    };
+
+    const resetDateTime = (taskId) => {
+        setSelectedDate(new Date());
     };
 
     // Close Modal
@@ -120,7 +103,7 @@ const Accordion = ({ title, tasks }) => {
                     { backgroundColor: isActive ? "#e0e0e0" : "#fff" },
                 ]}
             >
-                <Pressable onPressIn={drag} style={styles.handleContainer}>
+                <Pressable onTouchStart={drag} style={styles.handleContainer}>
                     <MaterialIcon
                         name="drag-indicator"
                         size={30}
@@ -185,28 +168,39 @@ const Accordion = ({ title, tasks }) => {
                 onRequestClose={closeModal}
             >
                 <View style={styles.dateModalOverlay}>
-                    <View>
-                        <Text>Due Date</Text>
-                        <Text>{selectedDate.toLocaleDateString}</Text>
-                        <View>
-                            <Pressable>
-                                <Text>Cancel</Text>
+                    <View style={styles.dateContainer}>
+                        <Text style={styles.dateTitle}>Due Date</Text>
+                        <View style={styles.dateTimeContainer}>
+                            <Pressable style={styles.dateTimeButton} onPress={openDueDate}>
+                                <MaterialIcon name="today" color={"grey"} size={25} />
+                                <Text style={styles.dateText}>{selectedDate.toLocaleDateString()}</Text>
+                            </Pressable>
+                            <Pressable style={styles.dateTimeButton} onPress={openDueTime}>
+                                <MaterialIcon name="schedule" color={"grey"} size={25} />
+                                <Text style={styles.dateText}>{selectedDate.toLocaleTimeString()}</Text>
+                            </Pressable>
+                            <Pressable onPress={resetDateTime}>
+                                <MaterialIcon name="close" color={"grey"} size={25} />
+                            </Pressable>
+                        </View>
+                        <Text style={styles.dateText}>Set Reminder</Text>
+                        <View style={styles.dateButtons}>
+                            <Pressable onPress={closeModal}>
+                                <Text style={styles.cancelButtonText}>Cancel</Text>
                             </Pressable>
                             <Pressable>
-                                <Text>Done</Text>
+                                <Text style={styles.doneButtonText}>Done</Text>
                             </Pressable>
                         </View>
                     </View>
                     {showDatePicker && (
-                        <>
-                            <DateTimePicker
-                                value={selectedDate}
-                                mode="date"
-                                display="default"
-                                onChange={onChangeDate}
-                                positiveButton={{ label: 'Set Due Date' }}
-                            />
-                        </>
+                        <DateTimePicker
+                            value={selectedDate}
+                            mode="date"
+                            display="default"
+                            onChange={onChangeDate}
+                            positiveButton={{ label: 'Set Due Date' }}
+                        />
                     )}
                     {showTimePicker && (
                         <DateTimePicker
@@ -379,28 +373,47 @@ const styles = StyleSheet.create({
         alignItems: "center",
         backgroundColor: "rgba(0,0,0,0.5)",
     },
-    modalContent: {
+    dateContainer: {
         width: "80%",
         backgroundColor: "#fff",
-        borderRadius: 10,
+        borderRadius: 2,
         padding: 20,
-        alignItems: "center",
+        alignItems: "flex-start",
     },
-    modalTitle: {
+    dateTitle: {
         fontSize: 20,
         fontWeight: "600",
-        marginBottom: 20,
+        marginBottom: "2%",
         color: "black",
     },
-    closeButton: {
-        marginTop: 20,
-        backgroundColor: "#2196F3",
-        paddingVertical: 10,
-        paddingHorizontal: 20,
-        borderRadius: 5,
+    dateTimeContainer: {
+        flexDirection: "row",
+        width: "100%",
+        marginBottom: "2%",
+        alignItems: "center",
+        justifyContent: "space-between",
     },
-    closeButtonText: {
-        color: "#fff",
-        fontSize: 16,
+    dateTimeButton: {
+        flexDirection: "row",
+        alignItems: "center",
     },
+    dateText: {
+        color: "black",
+        fontSize: 20,
+        marginRight: "5%"
+    },
+    dateButtons: {
+        flexDirection: "row",
+        justifyContent: "flex-end",
+        width: "100%",
+    },
+    cancelButtonText: {
+        color: "black",
+        fontSize: 18,
+        marginRight: "10%"
+    },
+    doneButtonText: {
+        color: "black",
+        fontSize: 18,
+    }
 });
