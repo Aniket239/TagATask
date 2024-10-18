@@ -35,7 +35,7 @@ const Accordion = ({ title, tasks }) => {
             completed: task.completed || false, // Assuming there's a 'completed' field
         }));
         setData(updatedData);
-    }, [tasks]);
+    }, []);
 
     // Toggle accordion with animation
     const toggleAccordion = useCallback(() => {
@@ -78,8 +78,8 @@ const Accordion = ({ title, tasks }) => {
     // Open Due Date Modal
     const openDueDate = useCallback((taskId) => {
         setSelectedTaskId(taskId);
-        setModalVisible(true)?setShowDatePicker(true):setShowDatePicker(false);
-        
+        setModalVisible(true) ? setShowDatePicker(true) : setShowDatePicker(false);
+
     }, []);
 
     const openDueTime = useCallback((taskId) => {
@@ -112,40 +112,45 @@ const Accordion = ({ title, tasks }) => {
 
     // Render each item in the draggable list
     const renderItem = useCallback(({ item, drag, isActive }) => (
-        <Pressable
-            style={[
-                styles.itemContainer,
-                { backgroundColor: isActive ? "#e0e0e0" : "#fff" },
-            ]}
-            onLongPress={drag} // Alternative to onTouchStart
-            accessibilityLabel={`Task: ${item.title}`}
-            accessibilityRole="button"
-        >
-            <MaterialIcon
-                name="drag-indicator"
-                size={30}
-                color="grey"
-                style={styles.icon}
-            />
-            <MaterialIcon
-                name={item.completed ? "check-box" : "check-box-outline-blank"}
-                size={27}
-                color={"grey"}
-                style={styles.icon}
-            />
-            <Text style={styles.itemText}>{item.title}</Text>
-            <View style={styles.icons}>
-                <Pressable onPress={() => openDueDate(item.id)} accessibilityLabel="Set Due Date" accessibilityRole="button">
-                    <MaterialIcon name="event" size={27} color={"grey"} />
+        <>
+            <View style={[
+                        styles.itemContainer,
+                        { backgroundColor: isActive ? "#e0e0e0" : "#fff" },
+                    ]}>
+                <Pressable
+                    onLongPress={drag} // Alternative to onTouchStart
+                    accessibilityLabel={`Task: ${item.title}`}
+                    accessibilityRole="button"
+                >
+                    <MaterialIcon
+                        name="drag-indicator"
+                        size={30}
+                        color="grey"
+                        style={styles.icon}
+                    />
                 </Pressable>
-                <Pressable onPress={() => openDueTime(item.id)} accessibilityLabel="Set Due Time" accessibilityRole="button">
-                    <MaterialIcon name="schedule" size={27} color={"grey"} />
-                </Pressable>
-                <Pressable onPress={() => {/* Implement edit functionality */ }} accessibilityLabel="Edit Task" accessibilityRole="button">
-                    <MaterialIcon name="edit" size={27} color={"grey"} />
+                <MaterialIcon
+                    name={item.completed ? "check-box" : "check-box-outline-blank"}
+                    size={27}
+                    color={"grey"}
+                    style={styles.icon}
+                />
+                <Pressable style={styles.taskData}>
+                    <Text style={styles.itemText}>{item.title}</Text>
+                    <View style={styles.icons}>
+                        <Pressable onPress={() => openDueDate(item.id)} accessibilityLabel="Set Due Date" accessibilityRole="button">
+                            <MaterialIcon name="event" size={27} color={"grey"} />
+                        </Pressable>
+                        <Pressable onPress={() => openDueTime(item.id)} accessibilityLabel="Set Due Time" accessibilityRole="button">
+                            <MaterialIcon name="schedule" size={27} color={"grey"} />
+                        </Pressable>
+                        <Pressable onPress={() => {/* Implement edit functionality */ }} accessibilityLabel="Edit Task" accessibilityRole="button">
+                            <MaterialIcon name="edit" size={27} color={"grey"} />
+                        </Pressable>
+                    </View>
                 </Pressable>
             </View>
-        </Pressable>
+        </>
     ), [openDueDate, openDueTime]);
 
     return (
@@ -256,74 +261,86 @@ export default React.memo(Accordion);
 const styles = StyleSheet.create({
     accordionContainer: {
         marginBottom: 16, // Space between accordions
-        borderRadius: 8,
+        borderRadius: 12, // Increased border radius for smoother edges
         borderWidth: 1,
-        borderColor: "#ccc",
-        backgroundColor: "#fff",
+        borderColor: "#e0e0e0", // Lighter border color for subtlety
+        backgroundColor: "#ffffff", // White background for clean look
         // Shadow for iOS
         shadowColor: "#000",
         shadowOffset: { width: 0, height: 2 },
         shadowOpacity: 0.1,
-        shadowRadius: 4,
+        shadowRadius: 6,
         // Elevation for Android
-        elevation: 2,
+        elevation: 3,
     },
     header: {
         flexDirection: "row",
-        padding: 16,
+        paddingVertical: 16,
+        paddingHorizontal: 20,
         justifyContent: "space-between",
         alignItems: "center",
-        backgroundColor: "#f0f0f0", // Slightly lighter for better visibility
-        borderTopLeftRadius: 8,
-        borderTopRightRadius: 8,
+        backgroundColor: "#f9f9f9", // Slightly off-white for distinction
+        borderTopLeftRadius: 12,
+        borderTopRightRadius: 12,
     },
     headerText: {
         fontSize: 18,
-        fontWeight: "600",
-        color: "#000", // Black text
+        fontWeight: "700",
+        color: "#333333", // Darker text for better readability
     },
     content: {
-        maxHeight: 500, // Limit the height to prevent overflow
+        backgroundColor: "#ffffff", // Consistent white background
     },
     itemContainer: {
         flexDirection: "row",
         alignItems: "center",
         borderBottomWidth: 1,
-        borderBottomColor: "#ddd",
-        padding: 10,
+        borderBottomColor: "#f0f0f0", // Lighter border for separation
+        paddingVertical: '2%',
+        marginHorizontal: '1%'
+    },
+    taskData: {
+        flex: 1, // Allow task data to take up remaining space
+        flexDirection: "row",
+        alignItems: "center",
+        justifyContent: "space-between",
     },
     icon: {
-        marginRight: 10,
+        marginRight: 15, // Increased spacing for better touch targets
     },
     itemText: {
         fontSize: 16,
-        color: "black", // Black text
+        color: "#555555", // Medium dark text for clarity
         flex: 1, // Allow text to take up remaining space
     },
     icons: {
         flexDirection: "row",
-        justifyContent: "space-between",
-        width: 90,
+        alignItems: "center",
     },
     // Modal styles
     modalOverlay: {
         flex: 1,
         justifyContent: "center",
         alignItems: "center",
-        backgroundColor: "rgba(0,0,0,0.5)",
+        backgroundColor: "rgba(0,0,0,0.6)", // Darker overlay for focus
     },
     modalContainer: {
-        width: "80%",
-        backgroundColor: "#fff",
-        borderRadius: 8,
-        padding: 20,
+        width: "85%",
+        backgroundColor: "#ffffff",
+        borderRadius: 12,
+        padding: 25,
         alignItems: "flex-start",
+        shadowColor: "#000",
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.2,
+        shadowRadius: 8,
+        elevation: 5,
     },
     modalTitle: {
         fontSize: 20,
-        fontWeight: "600",
+        fontWeight: "700",
         marginBottom: 20,
-        color: "black",
+        color: "#333333",
     },
     modalButtonsContainer: {
         flexDirection: "row",
@@ -337,9 +354,9 @@ const styles = StyleSheet.create({
         alignItems: "center",
     },
     modalButtonText: {
-        color: "black",
+        color: "#555555",
         fontSize: 16,
-        marginLeft: 5,
+        marginLeft: 8,
     },
     modalActionsContainer: {
         flexDirection: "row",
@@ -347,12 +364,14 @@ const styles = StyleSheet.create({
         width: "100%",
     },
     cancelButtonText: {
-        color: "black",
+        color: "#ff3b30", // Red color for destructive action
         fontSize: 18,
-        marginRight: 20,
+        marginRight: 25,
+        fontWeight: "600",
     },
     doneButtonText: {
-        color: "black",
+        color: "#007aff", // Blue color for primary action
         fontSize: 18,
+        fontWeight: "600",
     },
 });

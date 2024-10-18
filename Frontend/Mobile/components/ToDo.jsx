@@ -28,7 +28,7 @@ export default ToDo;
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        padding: 10,
+        padding: 0,
         backgroundColor: "#f2f2f2",
     },
     headerTitle: {
