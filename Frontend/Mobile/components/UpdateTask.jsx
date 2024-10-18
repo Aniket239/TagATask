@@ -7,52 +7,34 @@ import { launchCamera, MediaType } from 'react-native-image-picker';
 import DocumentPicker from 'react-native-document-picker';
 import RNFS from 'react-native-fs';
 
-interface Task {
-    id: string;
-    title: string;
-    dueDate: Date;  // Use Date object for consistency
-    label: string[];
-    recurrence: string | null;
-    comment: string[];  // Changed to an array of strings
-    fileUri?: string; // Add optional file URI
-    filenames: string[];  // Array of file names
-    fileDatas: { name: string, data: string }[];  // Array of objects containing file name and base64 data
-    dateSet: boolean;
-    status: "todo" | "tobeapproved" | "done";
-}
-
 const recurrenceData = [
     { label: 'None', value: 'None' },
     { label: 'Daily', value: 'Daily' },
     { label: 'Weekly', value: 'Weekly' },
     { label: 'Monthly', value: 'Monthly' },
 ];
-interface Label {
-    label: string;
-    value: string;
-}
 
-const NewTask = ({ isOpenTask, onClose, onSave, taskData }: { isOpenTask: boolean; onClose: () => void; onSave: (task: Task) => void; taskData?: Task | null }) => {
+const NewTask = ({ isOpenTask, onClose, onSave, taskData }) => {
     const defaultDate = new Date();
 
     // Set default values for id and status if not provided
     const [title, setTitle] = useState(taskData?.title || "");
-    const [dueDate, setDueDate] = useState<Date>(taskData?.dueDate ? new Date(taskData.dueDate) : defaultDate);
-    const [dateSet, setDateSet] = useState<boolean>(taskData?.dateSet || false);
-    const [availableLabels, setAvailableLabels] = useState<Label[]>([]);
-    const [filteredLabels, setFilteredLabels] = useState<Label[]>(availableLabels);
-    const [inputValue, setInputValue] = useState<string>("");
+    const [dueDate, setDueDate] = useState(taskData?.dueDate ? taskData.dueDate : defaultDate);
+    const [dateSet, setDateSet] = useState(taskData?.dateSet || false);
+    const [availableLabels, setAvailableLabels] = useState([]);
+    const [filteredLabels, setFilteredLabels] = useState(availableLabels);
+    const [inputValue, setInputValue] = useState("");
     const [customLabel, setCustomLabel] = useState(false);
-    const [label, setLabel] = useState<string[]>(taskData?.label || []);
-    const [recurrence, setRecurrence] = useState<string | null>(taskData?.recurrence || null);
-    const [comment, setComment] = useState<string>("");  // For input field
-    const [comments, setComments] = useState<string[]>(taskData?.comment || []);  // For storing comments
-    const [fileUri, setFileUri] = useState<string | undefined>(taskData?.fileUri);
+    const [label, setLabel] = useState(taskData?.label || []);
+    const [recurrence, setRecurrence] = useState(taskData?.recurrence || null);
+    const [comment, setComment] = useState("");  // For input field
+    const [comments, setComments] = useState(taskData?.comment || []);  // For storing comments
+    const [fileUri, setFileUri] = useState(taskData?.fileUri);
     const [isFocus, setIsFocus] = useState(false);
     const [titleError, setTitleError] = useState(false);
-    const [pickedFiles, setPickedFiles] = useState<string[]>(taskData?.filenames || []);
-    const [fileDataArray, setFileDataArray] = useState<{ name: string, data: string }[]>(taskData?.fileDatas || []);
-    const [isFileModalOpen, setIsFileModalOpen] = useState<boolean>(false);
+    const [pickedFiles, setPickedFiles] = useState(taskData?.filenames || []);
+    const [fileDataArray, setFileDataArray] = useState(taskData?.fileDatas || []);
+    const [isFileModalOpen, setIsFileModalOpen] = useState(false);
     const [isDueDatePickerOpen, setIsDueDatePickerOpen] = useState(false);
     const [isDueTimePickerOpen, setIsDueTimePickerOpen] = useState(false);
     const [isTaskMenuOpen, setTaskMenuOpen] = useState(false);
@@ -61,7 +43,7 @@ const NewTask = ({ isOpenTask, onClose, onSave, taskData }: { isOpenTask: boolea
     const id = taskData?.id || "";
 
     // Ensure `status` is either "todo", "tobeapproved", or "done", defaulting to "todo" if `undefined`
-    const status: "todo" | "tobeapproved" | "done" = taskData?.status || "todo";
+    const status = taskData?.status || "todo";
 
     useEffect(() => {
         if (taskData) {
@@ -156,19 +138,6 @@ const NewTask = ({ isOpenTask, onClose, onSave, taskData }: { isOpenTask: boolea
             return;
         }
 
-        const task: Task = {
-            id,
-            title,
-            dueDate: dueDate, // Use startDate or dueDate as appropriate
-            dateSet: dateSet,
-            label,
-            recurrence,
-            comment:comments,
-            fileUri,
-            filenames: pickedFiles,
-            fileDatas: fileDataArray,
-            status,
-        };
         console.log('====================================');
         console.log(dateSet);
         console.log('====================================');
@@ -183,9 +152,9 @@ const NewTask = ({ isOpenTask, onClose, onSave, taskData }: { isOpenTask: boolea
 
 
 
-    const handleCameraLaunch = async (isCamera: boolean) => {
+    const handleCameraLaunch = async (isCamera) => {
         const options = {
-            mediaType: isCamera ? 'photo' as MediaType : 'video' as MediaType,
+            mediaType: isCamera ? 'photo' : 'video',
         };
         try {
             const response = await launchCamera(options);
@@ -202,7 +171,7 @@ const NewTask = ({ isOpenTask, onClose, onSave, taskData }: { isOpenTask: boolea
                     uri: asset.uri || '',
                     name: asset.fileName || `captured_${Date.now()}.${isCamera ? 'jpg' : 'mp4'}`,
                 }));
-                const newFileNames: string[] = newCapturedFiles.map(file => file.name);
+                const newFileNames= newCapturedFiles.map(file => file.name);
                 setPickedFiles(prevFiles => [...prevFiles, ...newFileNames]);
                 const newFileDataArray = await Promise.all(newCapturedFiles.map(async (file) => {
                     const fileData = await RNFS.readFile(file.uri, 'base64');
@@ -223,11 +192,11 @@ const NewTask = ({ isOpenTask, onClose, onSave, taskData }: { isOpenTask: boolea
                 allowMultiSelection: true,
             });
             const newUniqueFiles = pickedNewFiles.filter(file => file.name !== null && !pickedFiles.includes(file.name!));
-            const newFileNames: string[] = newUniqueFiles.map(file => file.name as string);
+            const newFileNames= newUniqueFiles.map(file => file.name);
             setPickedFiles(prevFiles => [...prevFiles, ...newFileNames]);
             const newFileDataArray = await Promise.all(newUniqueFiles.map(async (file) => {
                 const fileData = await RNFS.readFile(file.uri, 'base64');
-                return { name: file.name as string, data: fileData };
+                return { name: file.name, data: fileData };
             }));
             setFileDataArray(prevData => [...prevData, ...newFileDataArray]);
             console.log('====================================');
@@ -243,7 +212,7 @@ const NewTask = ({ isOpenTask, onClose, onSave, taskData }: { isOpenTask: boolea
         }
     };
 
-    const removeFile = (fileName: string) => {
+    const removeFile = (fileName) => {
         setPickedFiles(prevFiles => prevFiles.filter(file => file !== fileName));
         setFileDataArray(prevData => prevData.filter(file => file.name !== fileName));
     };
