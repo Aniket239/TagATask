@@ -1,11 +1,10 @@
-// /components/Accordion.js
-
 import React, { useState, useEffect, useCallback } from "react";
-import { Text, StyleSheet, View, Pressable, LayoutAnimation, Modal, Platform, UIManager } from "react-native";
+import { Text, StyleSheet, View, Pressable, LayoutAnimation, TextInput, UIManager, Platform } from "react-native";
 import MaterialIcon from "react-native-vector-icons/MaterialIcons";
 import DraggableFlatList from "react-native-draggable-flatlist";
 import { useDispatch } from "react-redux";
 import { startScrolling, stopScrolling } from "../Redux/Slice/DragAndDrop";
+import { addTask } from "../Redux/Slice/taskSlice";
 
 // Enable LayoutAnimation on Android
 if (
@@ -19,17 +18,16 @@ const Accordion = ({ title, tasks }) => {
     const dispatch = useDispatch();
     const [isOpen, setIsOpen] = useState(true);
     const [data, setData] = useState([]);
-
+    const [editTitle, setEditTitle] = useState(false);
 
     // Synchronize data with tasks prop
     useEffect(() => {
         const updatedData = tasks.map((task) => ({
-            id: task.id.toString(), // Ensure id is a string
+            id: task.id.toString(),
             title: task.title,
             dueDate: task.dueDate ? new Date(task.dueDate) : null,
-            status: task.status, // Assuming there's a 'completed' field
+            status: task.status,
         }));
-        console.log(updatedData);
         setData(updatedData);
     }, [tasks]);
 
@@ -39,70 +37,78 @@ const Accordion = ({ title, tasks }) => {
         setIsOpen((prev) => !prev);
     }, []);
 
-    const newTask = () =>{
-        
-    }
+    // Handle adding a new task
+    const addNewTask = () => {
+        const newTask = {
+            id: (data.length + 1).toString(),
+            title: "", // Empty title to start editing
+            dueDate: new Date(),
+            status: "execute", // Default status
+            isNew: true, // Flag to indicate this is a new task being edited
+        };
+        setData([...data, newTask]);
+    };
 
+    // Handle task title change
+    const handleTitleChange = (text, id) => {
+        const updatedData = data.map(task => 
+            task.id === id ? { ...task, title: text } : task
+        );
+        setData(updatedData); // Ensure you're setting a new array reference
+    }
 
     // Render each item in the draggable list
     const renderItem = useCallback(({ item, drag, isActive }) => (
-        <>
-            <View style={[
-                styles.itemContainer,
-                { backgroundColor: isActive ? "#e0e0e0" : "#fff" },
-            ]}>
-                <Pressable
-                    onTouchStart={drag} // Alternative to onTouchStart
-                    accessibilityLabel={`Task: ${item.title}`}
-                    accessibilityRole="button"
-                >
-                    <MaterialIcon
-                        name="drag-indicator"
-                        size={27}
-                        color="grey"
-                        style={styles.icon}
+        <View style={[styles.itemContainer, { backgroundColor: isActive ? "#e0e0e0" : "#fff" }]}>
+            <Pressable onTouchStart={drag} accessibilityLabel={`Task: ${item.title}`} accessibilityRole="button">
+                <MaterialIcon name="drag-indicator" size={27} color="grey" style={styles.icon} />
+            </Pressable>
+
+            {(item.status === "execute" || item.status === "approve") && (
+                <MaterialIcon name="check-box-outline-blank" size={25} color={"grey"} style={styles.icon} />
+            )}
+
+            <Pressable style={styles.taskData}>
+                {/* If the task is new, show a TextInput to enter the task title */}
+                {item.isNew ? (
+                    <TextInput
+                        style={styles.itemText}
+                        value={item.title}
+                        autoFocus={true}
+                        onChangeText={(text) => handleTitleChange(text, item.id)}
+                        onBlur={() => { dispatch(addTask(item)) }}
                     />
-                </Pressable>
-                {(item.status === "execute" || item.status === "approve") && (
-                    <MaterialIcon
-                        name="check-box-outline-blank"
-                        size={25}
-                        color={"grey"}
-                        style={styles.icon}
-                    />
+                ) : (
+                    <Pressable style={styles.taskData} onLongPress={() => setEditTitle(true)}>
+                        <TextInput
+                            style={styles.itemText}
+                            value={item.title}
+                            editable={editTitle}
+                            multiline={true}
+                            onChangeText={(text) => handleTitleChange(text, item.id)}
+                        />
+                    </Pressable>
                 )}
-                <Pressable style={styles.taskData}>
-                    <Text style={styles.itemText}>{item.title}</Text>
-                    <View style={styles.icons}>
-                        <Pressable onPress={() =>{}} accessibilityLabel="Set Due Date" accessibilityRole="button">
-                            <MaterialIcon name="event" size={22} color={"grey"} />
-                        </Pressable>
-                        <Pressable onPress={() =>{}} accessibilityLabel="Set Due Time" accessibilityRole="button">
-                            <MaterialIcon name="label-outline" size={22} color={"grey"} />
-                        </Pressable>
-                        <Pressable onPress={() => {/* Implement edit functionality */ }} accessibilityLabel="Edit Task" accessibilityRole="button">
-                            <MaterialIcon name="edit" size={22} color={"grey"} />
-                        </Pressable>
-                    </View>
-                </Pressable>
-            </View>
-        </>
-    ), []);
+                <View style={styles.icons}>
+                    <Pressable onPress={() => { }} accessibilityLabel="Set Due Date" accessibilityRole="button">
+                        <MaterialIcon name="event" size={22} color={"grey"} />
+                    </Pressable>
+                    <Pressable onPress={() => { }} accessibilityLabel="Set Due Time" accessibilityRole="button">
+                        <MaterialIcon name="label-outline" size={22} color={"grey"} />
+                    </Pressable>
+                    <Pressable onPress={() => { }} accessibilityLabel="Edit Task" accessibilityRole="button">
+                        <MaterialIcon name="edit" size={22} color={"grey"} />
+                    </Pressable>
+                </View>
+            </Pressable>
+        </View>
+    ), [data]);
 
     return (
         <View style={styles.accordionContainer}>
-            <Pressable
-                style={styles.header}
-                onPress={toggleAccordion}
-                accessibilityLabel={`${title} Accordion`}
-                accessibilityRole="button"
-            >
+            <Pressable style={styles.header} onPress={toggleAccordion} accessibilityLabel={`${title} Accordion`} accessibilityRole="button">
                 <Text style={styles.headerText}>{title}</Text>
-                <MaterialIcon
-                    name={isOpen ? "expand-less" : "expand-more"}
-                    size={24}
-                    color="#555"
-                />
+                <MaterialIcon name={isOpen ? "expand-less" : "expand-more"} size={24} color="#555" />
             </Pressable>
 
             {/* Accordion Content */}
@@ -113,7 +119,8 @@ const Accordion = ({ title, tasks }) => {
                         renderItem={renderItem}
                         keyExtractor={(item) => item.id}
                         onDragEnd={({ data }) => {
-                            setData(data);
+                            const updatedData = [...data]; // Create a new array
+                            setData(updatedData);
                             dispatch(startScrolling());
                         }}
                         initialNumToRender={10}
@@ -121,10 +128,10 @@ const Accordion = ({ title, tasks }) => {
                         scrollEnabled={true}
                         onDragBegin={() => dispatch(stopScrolling())}
                     />
-                    {(title === "Execute") && (
+                    {title === "Execute" && (
                         <View style={styles.addTaskContainer}>
                             <Pressable
-                                onPress={() => {newTask}}
+                                onPress={addNewTask}
                                 style={styles.addTaskPressable}
                                 accessibilityLabel="Add Task"
                                 accessibilityRole="button"
@@ -133,12 +140,10 @@ const Accordion = ({ title, tasks }) => {
                                 <Text style={styles.addTaskText}>Add Task</Text>
                             </Pressable>
                         </View>
-
                     )}
                 </View>
             )}
-
-             </View>
+        </View>
     );
 };
 
@@ -147,18 +152,17 @@ export default React.memo(Accordion);
 
 const styles = StyleSheet.create({
     accordionContainer: {
-        marginBottom: 16, // Space between accordions
-        borderRadius: 12, // Increased border radius for smoother edges
+        marginBottom: 16, // Space between accordions to avoid overlapping when collapsed
+        borderRadius: 12,
         borderWidth: 1,
-        borderColor: "#e0e0e0", // Lighter border color for subtlety
-        backgroundColor: "#ffffff", // White background for clean look
-        // Shadow for iOS
+        borderColor: "#e0e0e0",
+        backgroundColor: "#ffffff",
         shadowColor: "#000",
         shadowOffset: { width: 0, height: 2 },
         shadowOpacity: 0.1,
         shadowRadius: 6,
-        // Elevation for Android
         elevation: 3,
+        position: 'relative', // Ensure relative positioning for absolute children
     },
     header: {
         flexDirection: "row",
@@ -166,125 +170,82 @@ const styles = StyleSheet.create({
         paddingHorizontal: "4%",
         justifyContent: "space-between",
         alignItems: "center",
-        backgroundColor: "#f9f9f9", // Slightly off-white for distinction
-        borderRadius: 12, // Increased border radius for smoother edges
+        backgroundColor: "#f9f9f9",
+        borderRadius: 12,
+        zIndex: 1, // Ensure the header stays above the list
+        position: "relative", // Change from "absolute" to allow accordion height to expand naturally
     },
     headerText: {
         fontSize: 18,
         fontWeight: "700",
-        color: "#333333", // Darker text for better readability
+        color: "#333333",
     },
     content: {
-        backgroundColor: "#ffffff", // Consistent white background
-        borderRadius: 12, // Increased border radius for smoother edges
+        backgroundColor: "#ffffff",
+        borderRadius: 12,
+        paddingTop: 10, // Reduced padding to avoid excessive space between header and content
+        paddingBottom: 70, // Add enough padding to account for the fixed Add Task button at the bottom
+        maxHeight: 500, // Limit the height to prevent the list from growing too tall
     },
     itemContainer: {
         flexDirection: "row",
         alignItems: "center",
         borderBottomWidth: 1,
-        borderBottomColor: "#f0f0f0", // Lighter border for separation
+        borderBottomColor: "#f0f0f0",
         paddingVertical: '2%',
         marginHorizontal: '1%',
-        borderRadius: 12, // Increased border radius for smoother edges
+        borderRadius: 12,
     },
     taskData: {
-        flex: 1, // Allow task data to take up remaining space
+        flex: 1,
         flexDirection: "row",
         alignItems: "center",
         justifyContent: "space-between",
     },
     icon: {
-        marginRight: "1%", // Increased spacing for better touch targets
+        marginRight: "1%",
     },
     itemText: {
         fontSize: 18,
-        color: "black", // Medium dark text for clarity
-        flex: 1, // Allow text to take up remaining space
+        color: "black",
+        flex: 1,
     },
     icons: {
         width: "25%",
         flexDirection: "row",
         alignItems: "center",
         justifyContent: "space-between",
-        marginRight: "1%", // Increased spacing for better touch targets
+        marginRight: "1%",
     },
-
     addTaskContainer: {
-        backgroundColor: "#ffffff", // Match the background of the accordion content
-        alignItems: "flex-start", // Align Add Task to the start
-        paddingLeft: "8.6%",
-        paddingVertical: "2%",
-        paddingHorizontal: "1%",
-        borderRadius: 12, // Increased border radius for smoother edges
+        position: "absolute", // Fix the Add Task button at the bottom of the accordion
+        bottom: 0,
+        left: 0,
+        right: 0,
+        backgroundColor: "#ffffff",
+        borderTopWidth: 1,
+        borderTopColor: "#e0e0e0",
+        paddingVertical: 10,
+        alignItems: "center", // Center the Add Task button
+        zIndex: 1, // Ensure the button stays on top of the content
     },
-
     addTaskPressable: {
-        flexDirection: "row", // To place the icon and text in a row
-        alignItems: "center", // Vertically align icon and text
-        justifyContent: "center", // Center content horizontally
+        flexDirection: "row",
+        alignItems: "center",
+        justifyContent: "center",
     },
     addTaskText: {
-        fontSize: 20, // Medium text size
-        color: "grey", // Dark grey for contrast with background
-        fontWeight: "bold", //
-        marginLeft: "1%", // Add space between the icon and text
-    },
-
-    // Modal styles
-    modalOverlay: {
-        flex: 1,
-        justifyContent: "center",
-        alignItems: "center",
-        backgroundColor: "rgba(0,0,0,0.6)", // Darker overlay for focus
-    },
-    modalContainer: {
-        width: "85%",
-        backgroundColor: "#ffffff",
-        borderRadius: 12,
-        padding: 25,
-        alignItems: "flex-start",
-        shadowColor: "#000",
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.2,
-        shadowRadius: 8,
-        elevation: 5,
-    },
-    modalTitle: {
         fontSize: 20,
-        fontWeight: "700",
-        marginBottom: 20,
-        color: "#333333",
+        color: "grey",
+        fontWeight: "bold",
+        marginLeft: "1%",
     },
-    modalButtonsContainer: {
-        flexDirection: "row",
-        width: "100%",
-        marginBottom: 20,
-        alignItems: "center",
-        justifyContent: "space-between",
-    },
-    modalButton: {
-        flexDirection: "row",
-        alignItems: "center",
-    },
-    modalButtonText: {
-        color: "#555555",
-        fontSize: 16,
-        marginLeft: 8,
-    },
-    modalActionsContainer: {
-        flexDirection: "row",
-        justifyContent: "flex-end",
-        width: "100%",
-    },
-    cancelButtonText: {
-        color: "#ff3b30", // Red color for destructive action
+    textInput: {
         fontSize: 18,
-        marginRight: 25,
-        fontWeight: "600",
-    },
-    doneButtonText: {
-        color: "#007aff", // Blue color for primary action
-        fontSize: 18,
-        fontWeight: "600",
+        color: "black",
+        borderBottomWidth: 1,
+        borderBottomColor: "#cccccc",
+        padding: 4,
+        flex: 1,
     },
 });
