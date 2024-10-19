@@ -1,146 +1,283 @@
 const tasks = [
     {
-        id: "1a2b3c4d",
-        title: "Prepare marketing strategy",
-        dueDate: new Date('2024-10-30T10:00:00Z'),
-        label: ["marketing", "strategy", "Q4"],
+        id: "1b2c3d4e",
+        title: "Develop content strategy",
+        dueDate: new Date('2024-11-05T10:30:00Z'),
+        label: ["content", "strategy", "Q1"],
         recurrence: "weekly",
-        comment: ["Discuss with the team", "Get feedback from stakeholders"],
-        fileUri: "https://example.com/marketing_plan.pdf",
-        filenames: ["marketing_plan.pdf", "strategy_overview.pdf"],
+        comment: ["Discuss blog ideas", "Get social media input"],
+        fileUri: "https://example.com/content_strategy.pdf",
+        filenames: ["content_strategy.pdf", "blog_outline.pdf"],
         fileDatas: [
-            { name: "marketing_plan.pdf", data: "base64encodeddata" },
-            { name: "strategy_overview.pdf", data: "base64encodeddata" }
+            { name: "content_strategy.pdf", data: "base64encodeddata" },
+            { name: "blog_outline.pdf", data: "base64encodeddata" }
         ],
         dateSet: true,
-        status: "todo"
+        status: "execute"
     },
     {
-        id: "5e6f7g8h",
-        title: "Client follow-up call",
-        dueDate: new Date('2024-11-02T14:00:00Z'),
-        label: ["client", "call", "Q3"],
+        id: "5f6g7h8i",
+        title: "Finalize ad campaign",
+        dueDate: new Date('2024-10-25T12:00:00Z'),
+        label: ["ads", "campaign", "marketing"],
         recurrence: null,
-        comment: ["Prepare client notes", "Confirm meeting agenda"],
+        comment: ["Review creatives", "Approve final budget"],
+        filenames: ["ad_creatives_final.pdf"],
+        fileDatas: [
+            { name: "ad_creatives_final.pdf", data: "base64encodeddata" }
+        ],
+        dateSet: true,
+        status: "approve"
+    },
+    {
+        id: "9j0k1l2m",
+        title: "Prepare Q4 financial projections",
+        dueDate: new Date('2024-10-30T17:00:00Z'),
+        label: ["finance", "projections", "Q4"],
+        recurrence: "quarterly",
+        comment: ["Align with CFO", "Submit for board review"],
+        fileUri: "https://example.com/financial_projections.xlsx",
+        filenames: ["financial_projections.xlsx"],
+        fileDatas: [
+            { name: "financial_projections.xlsx", data: "base64encodeddata" }
+        ],
+        dateSet: true,
+        status: "forApproval"
+    },
+    {
+        id: "3n4o5p6q",
+        title: "Design branding guidelines",
+        dueDate: new Date('2024-11-12T09:00:00Z'),
+        label: ["branding", "design", "guidelines"],
+        recurrence: null,
+        comment: ["Define color schemes", "Design typography"],
+        filenames: ["branding_guidelines.pdf"],
+        fileDatas: [
+            { name: "branding_guidelines.pdf", data: "base64encodeddata" }
+        ],
+        dateSet: true,
+        status: "execute"
+    },
+    {
+        id: "7r8s9t0u",
+        title: "Implement CRM system",
+        dueDate: new Date('2024-12-01T11:00:00Z'),
+        label: ["CRM", "software", "implementation"],
+        recurrence: null,
+        comment: ["Coordinate with IT", "Schedule training"],
         filenames: [],
         fileDatas: [],
         dateSet: true,
-        status: "tobeapproved"
+        status: "done"
     },
     {
-        id: "9i0j1k2l",
-        title: "Design website mockups",
-        dueDate: new Date('2024-10-25T09:00:00Z'),
-        label: ["design", "website", "UI/UX"],
+        id: "v1w2x3y4",
+        title: "Plan year-end company party",
+        dueDate: new Date('2024-12-15T18:00:00Z'),
+        label: ["event", "party", "HR"],
         recurrence: null,
-        comment: ["Draft mobile layout", "Review desktop version"],
-        fileUri: "https://example.com/website_mockups.png",
-        filenames: ["website_mockups.png"],
+        comment: ["Book venue", "Send invites"],
+        fileUri: "https://example.com/party_plan.pdf",
+        filenames: ["party_plan.pdf"],
         fileDatas: [
-            { name: "website_mockups.png", data: "base64encodeddata" }
+            { name: "party_plan.pdf", data: "base64encodeddata" }
         ],
         dateSet: true,
-        status: "todo"
+        status: "forExecution"
     },
     {
-        id: "3m4n5o6p",
-        title: "Review legal contract",
-        dueDate: new Date('2024-10-22T16:00:00Z'),
-        label: ["legal", "review", "contract"],
+        id: "5z6a7b8c",
+        title: "Redesign mobile app UI",
+        dueDate: new Date('2024-11-25T09:00:00Z'),
+        label: ["design", "UI/UX", "mobile"],
         recurrence: null,
-        comment: ["Consult with legal team", "Finalize terms"],
-        filenames: ["contract_draft.docx"],
+        comment: ["Prepare wireframes", "Present design concepts"],
+        filenames: ["app_wireframes.pdf"],
         fileDatas: [
-            { name: "contract_draft.docx", data: "base64encodeddata" }
+            { name: "app_wireframes.pdf", data: "base64encodeddata" }
+        ],
+        dateSet: true,
+        status: "forExecution"
+    },
+    {
+        id: "9d0e1f2g",
+        title: "Submit patent application",
+        dueDate: new Date('2024-12-03T14:00:00Z'),
+        label: ["legal", "patent", "R&D"],
+        recurrence: null,
+        comment: ["Finalize claims", "Submit to patent office"],
+        filenames: ["patent_application.pdf"],
+        fileDatas: [
+            { name: "patent_application.pdf", data: "base64encodeddata" }
+        ],
+        dateSet: true,
+        status: "forApproval"
+    },
+    {
+        id: "3h4i5j6k",
+        title: "Create investor pitch deck",
+        dueDate: new Date('2024-10-28T16:00:00Z'),
+        label: ["pitch", "investors", "presentation"],
+        recurrence: null,
+        comment: ["Gather financials", "Design slide deck"],
+        fileUri: "https://example.com/investor_pitch.pdf",
+        filenames: ["investor_pitch.pdf"],
+        fileDatas: [
+            { name: "investor_pitch.pdf", data: "base64encodeddata" }
+        ],
+        dateSet: true,
+        status: "approve"
+    },
+    {
+        id: "7l8m9n0o",
+        title: "Conduct market research survey",
+        dueDate: new Date('2024-11-08T10:00:00Z'),
+        label: ["market research", "survey", "Q4"],
+        recurrence: null,
+        comment: ["Design survey", "Analyze responses"],
+        filenames: [],
+        fileDatas: [],
+        dateSet: true,
+        status: "done"
+    },
+    {
+        id: "1p2q3r4s",
+        title: "Organize product photoshoot",
+        dueDate: new Date('2024-11-10T12:00:00Z'),
+        label: ["product", "photoshoot", "marketing"],
+        recurrence: null,
+        comment: ["Hire photographer", "Prepare product samples"],
+        filenames: [],
+        fileDatas: [],
+        dateSet: true,
+        status: "forExecution"
+    },
+    {
+        id: "5t6u7v8w",
+        title: "Launch new product landing page",
+        dueDate: new Date('2024-11-20T09:30:00Z'),
+        label: ["product", "landing page", "web development"],
+        recurrence: null,
+        comment: ["Create content", "Coordinate with web team"],
+        filenames: ["landing_page_design.pdf"],
+        fileDatas: [
+            { name: "landing_page_design.pdf", data: "base64encodeddata" }
+        ],
+        dateSet: true,
+        status: "execute"
+    },
+    {
+        id: "9x0y1z2a",
+        title: "Write press release for new product",
+        dueDate: new Date('2024-10-25T10:00:00Z'),
+        label: ["PR", "product", "marketing"],
+        recurrence: null,
+        comment: ["Draft release", "Get CEO approval"],
+        fileUri: "https://example.com/press_release.pdf",
+        filenames: ["press_release.pdf"],
+        fileDatas: [
+            { name: "press_release.pdf", data: "base64encodeddata" }
+        ],
+        dateSet: true,
+        status: "forApproval"
+    },
+    {
+        id: "3b4c5d6e",
+        title: "Coordinate partnership meeting",
+        dueDate: new Date('2024-11-02T14:00:00Z'),
+        label: ["partnership", "meeting", "business"],
+        recurrence: null,
+        comment: ["Prepare agenda", "Review partnership terms"],
+        filenames: ["meeting_agenda.pdf"],
+        fileDatas: [
+            { name: "meeting_agenda.pdf", data: "base64encodeddata" }
+        ],
+        dateSet: true,
+        status: "forApproval"
+    },
+    {
+        id: "7f8g9h0i",
+        title: "Review employee performance reports",
+        dueDate: new Date('2024-12-01T15:00:00Z'),
+        label: ["HR", "performance", "review"],
+        recurrence: "yearly",
+        comment: ["Collect manager feedback", "Prepare reports"],
+        fileUri: "https://example.com/performance_reports.pdf",
+        filenames: ["performance_reports.pdf"],
+        fileDatas: [
+            { name: "performance_reports.pdf", data: "base64encodeddata" }
         ],
         dateSet: true,
         status: "done"
     },
     {
-        id: "7q8r9s0t",
-        title: "Organize team building event",
-        dueDate: new Date('2024-11-15T12:00:00Z'),
-        label: ["event", "team building"],
-        recurrence: "monthly",
-        comment: ["Select venue", "Prepare activity list"],
-        fileUri: "https://example.com/event_details.pdf",
-        filenames: ["event_details.pdf"],
+        id: "1j2k3l4m",
+        title: "Prepare annual budget",
+        dueDate: new Date('2024-12-10T12:00:00Z'),
+        label: ["finance", "budget", "annual"],
+        recurrence: "yearly",
+        comment: ["Review departmental budgets", "Submit to CFO"],
+        fileUri: "https://example.com/annual_budget.xlsx",
+        filenames: ["annual_budget.xlsx"],
         fileDatas: [
-            { name: "event_details.pdf", data: "base64encodeddata" }
+            { name: "annual_budget.xlsx", data: "base64encodeddata" }
         ],
         dateSet: true,
-        status: "todo"
+        status: "forApproval"
     },
     {
-        id: "u1v2w3x4",
-        title: "Submit quarterly financial report",
-        dueDate: new Date('2024-12-05T17:00:00Z'),
-        label: ["finance", "report", "Q3"],
-        recurrence: "quarterly",
-        comment: ["Double-check revenue numbers", "Get manager approval"],
-        fileUri: "https://example.com/q3_report.xlsx",
-        filenames: ["q3_report.xlsx"],
-        fileDatas: [
-            { name: "q3_report.xlsx", data: "base64encodeddata" }
-        ],
-        dateSet: true,
-        status: "tobeapproved"
-    },
-    {
-        id: "5y6z7a8b",
-        title: "Update social media content",
-        dueDate: new Date('2024-10-28T10:00:00Z'),
-        label: ["social media", "content", "update"],
-        recurrence: "bi-weekly",
-        comment: ["Create posts for Facebook, Instagram", "Schedule tweets"],
-        filenames: ["social_media_plan.pdf"],
-        fileDatas: [
-            { name: "social_media_plan.pdf", data: "base64encodeddata" }
-        ],
-        dateSet: true,
-        status: "todo"
-    },
-    {
-        id: "9c0d1e2f",
-        title: "Plan company retreat",
-        dueDate: new Date('2024-12-01T11:00:00Z'),
-        label: ["retreat", "planning", "HR"],
+        id: "5n6o7p8q",
+        title: "Design new product packaging",
+        dueDate: new Date('2024-11-18T09:00:00Z'),
+        label: ["product", "design", "packaging"],
         recurrence: null,
-        comment: ["Contact venues", "Prepare retreat itinerary"],
-        filenames: ["retreat_ideas.pdf"],
+        comment: ["Create initial concepts", "Present to marketing"],
+        filenames: ["packaging_design.pdf"],
         fileDatas: [
-            { name: "retreat_ideas.pdf", data: "base64encodeddata" }
+            { name: "packaging_design.pdf", data: "base64encodeddata" }
         ],
         dateSet: true,
-        status: "todo"
+        status: "execute"
     },
     {
-        id: "3g4h5i6j",
-        title: "Prepare product demo",
-        dueDate: new Date('2024-11-10T15:00:00Z'),
-        label: ["product", "demo", "sales"],
+        id: "9r0s1t2u",
+        title: "Plan customer feedback session",
+        dueDate: new Date('2024-11-22T10:30:00Z'),
+        label: ["customer", "feedback", "Q4"],
         recurrence: null,
-        comment: ["Create slide deck", "Prepare live demo"],
-        filenames: ["demo_presentation.pptx"],
-        fileDatas: [
-            { name: "demo_presentation.pptx", data: "base64encodeddata" }
-        ],
+        comment: ["Prepare questions", "Schedule session"],
+        filenames: [],
+        fileDatas: [],
         dateSet: true,
-        status: "tobeapproved"
+        status: "forExecution"
     },
     {
-        id: "7k8l9m0n",
-        title: "Send out newsletter",
-        dueDate: new Date('2024-10-20T08:00:00Z'),
-        label: ["newsletter", "email", "marketing"],
-        recurrence: "monthly",
-        comment: ["Write new content", "Update mailing list"],
-        filenames: ["newsletter_october.pdf"],
+        id: "3v4w5x6y",
+        title: "Conduct competitor analysis",
+        dueDate: new Date('2024-11-30T09:30:00Z'),
+        label: ["competitor", "analysis", "research"],
+        recurrence: null,
+        comment: ["Gather market data", "Present findings"],
+        filenames: ["competitor_analysis.pdf"],
         fileDatas: [
-            { name: "newsletter_october.pdf", data: "base64encodeddata" }
+            { name: "competitor_analysis.pdf", data: "base64encodeddata" }
         ],
         dateSet: true,
-        status: "todo"
+        status: "done"
+    },
+    {
+        id: "7z8a9b0c",
+        title: "Update company website",
+        dueDate: new Date('2024-12-05T11:00:00Z'),
+        label: ["website", "update", "IT"],
+        recurrence: null,
+        comment: ["Add new blog posts", "Update product pages"],
+        filenames: ["website_changes.pdf"],
+        fileDatas: [
+            { name: "website_changes.pdf", data: "base64encodeddata" }
+        ],
+        dateSet: true,
+        status: "execute"
     }
 ];
 

@@ -9,8 +9,8 @@ const ToDo = () => {
     const tasks = useSelector((state) => state.tasks);
 
     // Filter tasks into Pending and Completed
-    const pendingTasks = tasks.filter(task => task.status=='todo');
-    const completedTasks = tasks.filter(task => task.status=="tobeapproved");
+    const pendingTasks = tasks.filter(task => task.status=='execute');
+    const completedTasks = tasks.filter(task => task.status=="approve");
 
     return (
         <View style={styles.container}>

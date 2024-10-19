@@ -6,7 +6,6 @@ import MaterialIcon from "react-native-vector-icons/MaterialIcons";
 import DraggableFlatList from "react-native-draggable-flatlist";
 import { useDispatch } from "react-redux";
 import { startScrolling, stopScrolling } from "../Redux/Slice/DragAndDrop";
-import DateTimePicker from '@react-native-community/datetimepicker';
 
 // Enable LayoutAnimation on Android
 if (
@@ -20,11 +19,7 @@ const Accordion = ({ title, tasks }) => {
     const dispatch = useDispatch();
     const [isOpen, setIsOpen] = useState(true);
     const [data, setData] = useState([]);
-    const [modalVisible, setModalVisible] = useState(false);
-    const [selectedTaskId, setSelectedTaskId] = useState(null);
-    const [selectedDate, setSelectedDate] = useState(new Date());
-    const [showDatePicker, setShowDatePicker] = useState(false);
-    const [showTimePicker, setShowTimePicker] = useState(false);
+
 
     // Synchronize data with tasks prop
     useEffect(() => {
@@ -32,10 +27,11 @@ const Accordion = ({ title, tasks }) => {
             id: task.id.toString(), // Ensure id is a string
             title: task.title,
             dueDate: task.dueDate ? new Date(task.dueDate) : null,
-            completed: task.completed || false, // Assuming there's a 'completed' field
+            status: task.status, // Assuming there's a 'completed' field
         }));
+        console.log(updatedData);
         setData(updatedData);
-    }, []);
+    }, [tasks]);
 
     // Toggle accordion with animation
     const toggleAccordion = useCallback(() => {
@@ -43,115 +39,55 @@ const Accordion = ({ title, tasks }) => {
         setIsOpen((prev) => !prev);
     }, []);
 
-    // Handle date change
-    const onChangeDate = useCallback((event, date) => {
-        setShowDatePicker(false);
-        if (event.type === "set" && date) {
-            setSelectedDate(date);
-            // Update the dueDate for the selected task
-            setData((prevData) =>
-                prevData.map((task) =>
-                    task.id === selectedTaskId
-                        ? { ...task, dueDate: date }
-                        : task
-                )
-            );
-        }
-    }, [selectedTaskId]);
+    const newTask = () =>{
+        
+    }
 
-    // Handle time change
-    const onChangeTime = useCallback((event, time) => {
-        setShowTimePicker(false);
-        if (event.type === "set" && time) {
-            setSelectedDate(time);
-            // Update the dueDate for the selected task
-            setData((prevData) =>
-                prevData.map((task) =>
-                    task.id === selectedTaskId
-                        ? { ...task, dueDate: time }
-                        : task
-                )
-            );
-        }
-    }, [selectedTaskId]);
-
-    // Open Due Date Modal
-    const openDueDate = useCallback((taskId) => {
-        setSelectedTaskId(taskId);
-        setModalVisible(true) ? setShowDatePicker(true) : setShowDatePicker(false);
-
-    }, []);
-
-    const openDueTime = useCallback((taskId) => {
-        setSelectedTaskId(taskId);
-        setModalVisible(true);
-        setShowTimePicker(true);
-    }, []);
-
-    // Reset DateTime
-    const resetDateTime = useCallback(() => {
-        if (selectedTaskId !== null) {
-            setData((prevData) =>
-                prevData.map((task) =>
-                    task.id === selectedTaskId
-                        ? { ...task, dueDate: null }
-                        : task
-                )
-            );
-            setSelectedDate(new Date());
-        }
-    }, [selectedTaskId]);
-
-    // Close Modal
-    const closeModal = useCallback(() => {
-        setModalVisible(false);
-        setSelectedTaskId(null);
-        setShowDatePicker(false);
-        setShowTimePicker(false);
-    }, []);
 
     // Render each item in the draggable list
     const renderItem = useCallback(({ item, drag, isActive }) => (
         <>
             <View style={[
-                        styles.itemContainer,
-                        { backgroundColor: isActive ? "#e0e0e0" : "#fff" },
-                    ]}>
+                styles.itemContainer,
+                { backgroundColor: isActive ? "#e0e0e0" : "#fff" },
+            ]}>
                 <Pressable
-                    onLongPress={drag} // Alternative to onTouchStart
+                    onTouchStart={drag} // Alternative to onTouchStart
                     accessibilityLabel={`Task: ${item.title}`}
                     accessibilityRole="button"
                 >
                     <MaterialIcon
                         name="drag-indicator"
-                        size={30}
+                        size={27}
                         color="grey"
                         style={styles.icon}
                     />
                 </Pressable>
-                <MaterialIcon
-                    name={item.completed ? "check-box" : "check-box-outline-blank"}
-                    size={27}
-                    color={"grey"}
-                    style={styles.icon}
-                />
+                {(item.status === "execute" || item.status === "approve") && (
+                    <MaterialIcon
+                        name="check-box-outline-blank"
+                        size={25}
+                        color={"grey"}
+                        style={styles.icon}
+                    />
+                )}
                 <Pressable style={styles.taskData}>
                     <Text style={styles.itemText}>{item.title}</Text>
                     <View style={styles.icons}>
-                        <Pressable onPress={() => openDueDate(item.id)} accessibilityLabel="Set Due Date" accessibilityRole="button">
-                            <MaterialIcon name="event" size={27} color={"grey"} />
+                        <Pressable onPress={() =>{}} accessibilityLabel="Set Due Date" accessibilityRole="button">
+                            <MaterialIcon name="event" size={22} color={"grey"} />
                         </Pressable>
-                        <Pressable onPress={() => openDueTime(item.id)} accessibilityLabel="Set Due Time" accessibilityRole="button">
-                            <MaterialIcon name="schedule" size={27} color={"grey"} />
+                        <Pressable onPress={() =>{}} accessibilityLabel="Set Due Time" accessibilityRole="button">
+                            <MaterialIcon name="label-outline" size={22} color={"grey"} />
                         </Pressable>
                         <Pressable onPress={() => {/* Implement edit functionality */ }} accessibilityLabel="Edit Task" accessibilityRole="button">
-                            <MaterialIcon name="edit" size={27} color={"grey"} />
+                            <MaterialIcon name="edit" size={22} color={"grey"} />
                         </Pressable>
                     </View>
                 </Pressable>
             </View>
         </>
-    ), [openDueDate, openDueTime]);
+    ), []);
 
     return (
         <View style={styles.accordionContainer}>
@@ -181,77 +117,28 @@ const Accordion = ({ title, tasks }) => {
                             dispatch(startScrolling());
                         }}
                         initialNumToRender={10}
-                        contentContainerStyle={{ paddingBottom: 20 }}
                         horizontal={false}
                         scrollEnabled={true}
                         onDragBegin={() => dispatch(stopScrolling())}
                     />
+                    {(title === "Execute") && (
+                        <View style={styles.addTaskContainer}>
+                            <Pressable
+                                onPress={() => {newTask}}
+                                style={styles.addTaskPressable}
+                                accessibilityLabel="Add Task"
+                                accessibilityRole="button"
+                            >
+                                <MaterialIcon name="add" size={27} color={"grey"} />
+                                <Text style={styles.addTaskText}>Add Task</Text>
+                            </Pressable>
+                        </View>
+
+                    )}
                 </View>
             )}
 
-            {/* Due Date Modal */}
-            <Modal
-                transparent={true}
-                animationType="fade"
-                visible={modalVisible}
-                onRequestClose={closeModal}
-                accessible={true}
-                accessibilityViewIsModal={true}
-            >
-                <View style={styles.modalOverlay}>
-                    <View style={styles.modalContainer}>
-                        <Text style={styles.modalTitle}>Set Due Date & Time</Text>
-                        <View style={styles.modalButtonsContainer}>
-                            <Pressable style={styles.modalButton} onPress={() => openDueDate(selectedTaskId)}>
-                                <MaterialIcon name="today" color={"grey"} size={25} />
-                                <Text style={styles.modalButtonText}>
-                                    {data.find(task => task.id === selectedTaskId && task.dueDate)
-                                        ? new Date(data.find(task => task.id === selectedTaskId).dueDate).toLocaleDateString()
-                                        : "Select Date"}
-                                </Text>
-                            </Pressable>
-                            <Pressable style={styles.modalButton} onPress={() => openDueTime(selectedTaskId)}>
-                                <MaterialIcon name="schedule" color={"grey"} size={25} />
-                                <Text style={styles.modalButtonText}>
-                                    {data.find(task => task.id === selectedTaskId && task.dueDate)
-                                        ? new Date(data.find(task => task.id === selectedTaskId).dueDate).toLocaleTimeString()
-                                        : "Select Time"}
-                                </Text>
-                            </Pressable>
-                            <Pressable onPress={resetDateTime} accessibilityLabel="Reset Due Date & Time" accessibilityRole="button">
-                                <MaterialIcon name="close" color={"grey"} size={25} />
-                            </Pressable>
-                        </View>
-                        <View style={styles.modalActionsContainer}>
-                            <Pressable onPress={closeModal} accessibilityLabel="Cancel" accessibilityRole="button">
-                                <Text style={styles.cancelButtonText}>Cancel</Text>
-                            </Pressable>
-                            <Pressable onPress={closeModal} accessibilityLabel="Done" accessibilityRole="button">
-                                <Text style={styles.doneButtonText}>Done</Text>
-                            </Pressable>
-                        </View>
-                        {/* Date Picker */}
-                        {showDatePicker && (
-                            <DateTimePicker
-                                value={selectedDate}
-                                mode="date"
-                                display="default"
-                                onChange={onChangeDate}
-                            />
-                        )}
-                        {/* Time Picker */}
-                        {showTimePicker && (
-                            <DateTimePicker
-                                value={selectedDate}
-                                mode="time"
-                                display="default"
-                                onChange={onChangeTime}
-                            />
-                        )}
-                    </View>
-                </View>
-            </Modal>
-        </View>
+             </View>
     );
 };
 
@@ -275,13 +162,12 @@ const styles = StyleSheet.create({
     },
     header: {
         flexDirection: "row",
-        paddingVertical: 16,
-        paddingHorizontal: 20,
+        paddingVertical: "3%",
+        paddingHorizontal: "4%",
         justifyContent: "space-between",
         alignItems: "center",
         backgroundColor: "#f9f9f9", // Slightly off-white for distinction
-        borderTopLeftRadius: 12,
-        borderTopRightRadius: 12,
+        borderRadius: 12, // Increased border radius for smoother edges
     },
     headerText: {
         fontSize: 18,
@@ -290,6 +176,7 @@ const styles = StyleSheet.create({
     },
     content: {
         backgroundColor: "#ffffff", // Consistent white background
+        borderRadius: 12, // Increased border radius for smoother edges
     },
     itemContainer: {
         flexDirection: "row",
@@ -297,7 +184,8 @@ const styles = StyleSheet.create({
         borderBottomWidth: 1,
         borderBottomColor: "#f0f0f0", // Lighter border for separation
         paddingVertical: '2%',
-        marginHorizontal: '1%'
+        marginHorizontal: '1%',
+        borderRadius: 12, // Increased border radius for smoother edges
     },
     taskData: {
         flex: 1, // Allow task data to take up remaining space
@@ -306,17 +194,42 @@ const styles = StyleSheet.create({
         justifyContent: "space-between",
     },
     icon: {
-        marginRight: 15, // Increased spacing for better touch targets
+        marginRight: "1%", // Increased spacing for better touch targets
     },
     itemText: {
-        fontSize: 16,
-        color: "#555555", // Medium dark text for clarity
+        fontSize: 18,
+        color: "black", // Medium dark text for clarity
         flex: 1, // Allow text to take up remaining space
     },
     icons: {
+        width: "25%",
         flexDirection: "row",
         alignItems: "center",
+        justifyContent: "space-between",
+        marginRight: "1%", // Increased spacing for better touch targets
     },
+
+    addTaskContainer: {
+        backgroundColor: "#ffffff", // Match the background of the accordion content
+        alignItems: "flex-start", // Align Add Task to the start
+        paddingLeft: "8.6%",
+        paddingVertical: "2%",
+        paddingHorizontal: "1%",
+        borderRadius: 12, // Increased border radius for smoother edges
+    },
+
+    addTaskPressable: {
+        flexDirection: "row", // To place the icon and text in a row
+        alignItems: "center", // Vertically align icon and text
+        justifyContent: "center", // Center content horizontally
+    },
+    addTaskText: {
+        fontSize: 20, // Medium text size
+        color: "grey", // Dark grey for contrast with background
+        fontWeight: "bold", //
+        marginLeft: "1%", // Add space between the icon and text
+    },
+
     // Modal styles
     modalOverlay: {
         flex: 1,
