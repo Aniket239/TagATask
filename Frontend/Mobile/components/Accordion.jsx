@@ -37,7 +37,6 @@ const Accordion = ({ title, tasks }) => {
         setIsOpen((prev) => !prev);
     }, []);
 
-    // Handle adding a new task
     const addNewTask = () => {
         const newTask = {
             id: (data.length + 1).toString(),
@@ -51,12 +50,11 @@ const Accordion = ({ title, tasks }) => {
 
     // Handle task title change
     const handleTitleChange = (text, id) => {
-        const updatedData = data.map(task => 
+        const updatedData = data.map(task =>
             task.id === id ? { ...task, title: text } : task
         );
         setData(updatedData); // Ensure you're setting a new array reference
     }
-
     // Render each item in the draggable list
     const renderItem = useCallback(({ item, drag, isActive }) => (
         <View style={[styles.itemContainer, { backgroundColor: isActive ? "#e0e0e0" : "#fff" }]}>
@@ -68,23 +66,28 @@ const Accordion = ({ title, tasks }) => {
                 <MaterialIcon name="check-box-outline-blank" size={25} color={"grey"} style={styles.icon} />
             )}
 
-            <Pressable style={styles.taskData}>
-                {/* If the task is new, show a TextInput to enter the task title */}
+            <View style={styles.taskData}>
                 {item.isNew ? (
                     <TextInput
                         style={styles.itemText}
                         value={item.title}
                         autoFocus={true}
                         onChangeText={(text) => handleTitleChange(text, item.id)}
-                        onBlur={() => { dispatch(addTask(item)) }}
+                        onBlur={() => {
+                            dispatch(addTask(item));
+                            // Optionally, you can add a new task here if needed
+                        }}
+                        returnKeyType="done" // Set the return key type
+                        onSubmitEditing={() => {
+                            addNewTask(); // Add a new task
+                        }}
                     />
                 ) : (
-                    <Pressable style={styles.taskData} onLongPress={() => setEditTitle(true)}>
+                    <Pressable style={styles.taskData} onPress={() => setEditTitle(true)}>
                         <TextInput
                             style={styles.itemText}
                             value={item.title}
                             editable={editTitle}
-                            multiline={true}
                             onChangeText={(text) => handleTitleChange(text, item.id)}
                         />
                     </Pressable>
@@ -100,7 +103,7 @@ const Accordion = ({ title, tasks }) => {
                         <MaterialIcon name="edit" size={22} color={"grey"} />
                     </Pressable>
                 </View>
-            </Pressable>
+            </View>
         </View>
     ), [data]);
 
@@ -113,7 +116,7 @@ const Accordion = ({ title, tasks }) => {
 
             {/* Accordion Content */}
             {isOpen && (
-                <View style={styles.content}>
+                <View style={[styles.content, title === "Execute" && { paddingBottom: 48 }]}>
                     <DraggableFlatList
                         data={data}
                         renderItem={renderItem}
@@ -183,8 +186,6 @@ const styles = StyleSheet.create({
     content: {
         backgroundColor: "#ffffff",
         borderRadius: 12,
-        paddingTop: 10, // Reduced padding to avoid excessive space between header and content
-        paddingBottom: 70, // Add enough padding to account for the fixed Add Task button at the bottom
         maxHeight: 500, // Limit the height to prevent the list from growing too tall
     },
     itemContainer: {
@@ -192,8 +193,6 @@ const styles = StyleSheet.create({
         alignItems: "center",
         borderBottomWidth: 1,
         borderBottomColor: "#f0f0f0",
-        paddingVertical: '2%',
-        marginHorizontal: '1%',
         borderRadius: 12,
     },
     taskData: {
@@ -208,7 +207,7 @@ const styles = StyleSheet.create({
     itemText: {
         fontSize: 18,
         color: "black",
-        flex: 1,
+        width: "100%"
     },
     icons: {
         width: "25%",
@@ -225,14 +224,17 @@ const styles = StyleSheet.create({
         backgroundColor: "#ffffff",
         borderTopWidth: 1,
         borderTopColor: "#e0e0e0",
-        paddingVertical: 10,
-        alignItems: "center", // Center the Add Task button
+        borderRadius: 12,
+        alignItems: "flex-start", // Center the Add Task button
         zIndex: 1, // Ensure the button stays on top of the content
     },
     addTaskPressable: {
+        paddingVertical: 10,
+        paddingLeft: "7.7%",
+        width: "100%",
         flexDirection: "row",
         alignItems: "center",
-        justifyContent: "center",
+        justifyContent: "flex-start",
     },
     addTaskText: {
         fontSize: 20,
