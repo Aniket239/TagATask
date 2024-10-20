@@ -1,6 +1,6 @@
 const tasks = [
     {
-        id: "1b2c3d4e",
+        id: "1",
         title: "Develop content strategy",
         dueDate: new Date('2024-11-05T10:30:00Z'),
         label: ["content", "strategy", "Q1"],
@@ -16,7 +16,7 @@ const tasks = [
         status: "execute"
     },
     {
-        id: "5f6g7h8i",
+        id: "2",
         title: "Finalize ad campaign",
         dueDate: new Date('2024-10-25T12:00:00Z'),
         label: ["ads", "campaign", "marketing"],
@@ -30,7 +30,7 @@ const tasks = [
         status: "approve"
     },
     {
-        id: "9j0k1l2m",
+        id: "3",
         title: "Prepare Q4 financial projections",
         dueDate: new Date('2024-10-30T17:00:00Z'),
         label: ["finance", "projections", "Q4"],
@@ -45,7 +45,7 @@ const tasks = [
         status: "forApproval"
     },
     {
-        id: "3n4o5p6q",
+        id: "4",
         title: "Design branding guidelines",
         dueDate: new Date('2024-11-12T09:00:00Z'),
         label: ["branding", "design", "guidelines"],
@@ -59,7 +59,7 @@ const tasks = [
         status: "execute"
     },
     {
-        id: "7r8s9t0u",
+        id: "5",
         title: "Implement CRM system",
         dueDate: new Date('2024-12-01T11:00:00Z'),
         label: ["CRM", "software", "implementation"],
@@ -71,7 +71,7 @@ const tasks = [
         status: "done"
     },
     {
-        id: "v1w2x3y4",
+        id: "6",
         title: "Plan year-end company party",
         dueDate: new Date('2024-12-15T18:00:00Z'),
         label: ["event", "party", "HR"],
@@ -86,7 +86,7 @@ const tasks = [
         status: "forExecution"
     },
     {
-        id: "5z6a7b8c",
+        id: "7",
         title: "Redesign mobile app UI",
         dueDate: new Date('2024-11-25T09:00:00Z'),
         label: ["design", "UI/UX", "mobile"],
@@ -100,7 +100,7 @@ const tasks = [
         status: "forExecution"
     },
     {
-        id: "9d0e1f2g",
+        id: "8",
         title: "Submit patent application",
         dueDate: new Date('2024-12-03T14:00:00Z'),
         label: ["legal", "patent", "R&D"],
@@ -114,7 +114,7 @@ const tasks = [
         status: "forApproval"
     },
     {
-        id: "3h4i5j6k",
+        id: "9",
         title: "Create investor pitch deck",
         dueDate: new Date('2024-10-28T16:00:00Z'),
         label: ["pitch", "investors", "presentation"],
@@ -129,7 +129,7 @@ const tasks = [
         status: "approve"
     },
     {
-        id: "7l8m9n0o",
+        id: "10",
         title: "Conduct market research survey",
         dueDate: new Date('2024-11-08T10:00:00Z'),
         label: ["market research", "survey", "Q4"],
@@ -141,7 +141,7 @@ const tasks = [
         status: "done"
     },
     {
-        id: "1p2q3r4s",
+        id: "11",
         title: "Organize product photoshoot",
         dueDate: new Date('2024-11-10T12:00:00Z'),
         label: ["product", "photoshoot", "marketing"],
@@ -153,7 +153,7 @@ const tasks = [
         status: "forExecution"
     },
     {
-        id: "5t6u7v8w",
+        id: "12",
         title: "Launch new product landing page",
         dueDate: new Date('2024-11-20T09:30:00Z'),
         label: ["product", "landing page", "web development"],
@@ -167,7 +167,7 @@ const tasks = [
         status: "execute"
     },
     {
-        id: "9x0y1z2a",
+        id: "13",
         title: "Write press release for new product",
         dueDate: new Date('2024-10-25T10:00:00Z'),
         label: ["PR", "product", "marketing"],
@@ -182,7 +182,7 @@ const tasks = [
         status: "forApproval"
     },
     {
-        id: "3b4c5d6e",
+        id: "14",
         title: "Coordinate partnership meeting",
         dueDate: new Date('2024-11-02T14:00:00Z'),
         label: ["partnership", "meeting", "business"],
@@ -196,7 +196,7 @@ const tasks = [
         status: "forApproval"
     },
     {
-        id: "7f8g9h0i",
+        id: "15",
         title: "Review employee performance reports",
         dueDate: new Date('2024-12-01T15:00:00Z'),
         label: ["HR", "performance", "review"],
@@ -211,7 +211,7 @@ const tasks = [
         status: "done"
     },
     {
-        id: "1j2k3l4m",
+        id: "16",
         title: "Prepare annual budget",
         dueDate: new Date('2024-12-10T12:00:00Z'),
         label: ["finance", "budget", "annual"],
@@ -226,7 +226,7 @@ const tasks = [
         status: "forApproval"
     },
     {
-        id: "5n6o7p8q",
+        id: "17",
         title: "Design new product packaging",
         dueDate: new Date('2024-11-18T09:00:00Z'),
         label: ["product", "design", "packaging"],
@@ -240,7 +240,7 @@ const tasks = [
         status: "execute"
     },
     {
-        id: "9r0s1t2u",
+        id: "18",
         title: "Plan customer feedback session",
         dueDate: new Date('2024-11-22T10:30:00Z'),
         label: ["customer", "feedback", "Q4"],
@@ -252,7 +252,7 @@ const tasks = [
         status: "forExecution"
     },
     {
-        id: "3v4w5x6y",
+        id: "19",
         title: "Conduct competitor analysis",
         dueDate: new Date('2024-11-30T09:30:00Z'),
         label: ["competitor", "analysis", "research"],
@@ -266,7 +266,7 @@ const tasks = [
         status: "done"
     },
     {
-        id: "7z8a9b0c",
+        id: "20",
         title: "Update company website",
         dueDate: new Date('2024-12-05T11:00:00Z'),
         label: ["website", "update", "IT"],

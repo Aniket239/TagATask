@@ -4,7 +4,7 @@ import MaterialIcon from "react-native-vector-icons/MaterialIcons";
 import DraggableFlatList from "react-native-draggable-flatlist";
 import { useDispatch } from "react-redux";
 import { startScrolling, stopScrolling } from "../Redux/Slice/DragAndDrop";
-import { addTask } from "../Redux/Slice/taskSlice";
+import { addTask, reorderTask } from "../Redux/Slice/taskSlice";
 
 // Enable LayoutAnimation on Android
 if (
@@ -19,17 +19,21 @@ const Accordion = ({ title, tasks }) => {
     const [isOpen, setIsOpen] = useState(true);
     const [data, setData] = useState([]);
     const [editTitle, setEditTitle] = useState(false);
-
+    console.log("====================================================== all tasks ================================================");
+    console.log(tasks);
+    console.log("====================================================== all tasks ================================================");
+    
     // Synchronize data with tasks prop
     useEffect(() => {
         const updatedData = tasks.map((task) => ({
             id: task.id.toString(),
             title: task.title,
-            dueDate: task.dueDate ? new Date(task.dueDate) : null,
+            dueDate: task.dueDate, // Keep as string
             status: task.status,
         }));
         setData(updatedData);
-    }, [tasks]);
+    }, []);
+    
 
     // Toggle accordion with animation
     const toggleAccordion = useCallback(() => {
@@ -41,12 +45,13 @@ const Accordion = ({ title, tasks }) => {
         const newTask = {
             id: (data.length + 1).toString(),
             title: "", // Empty title to start editing
-            dueDate: new Date(),
+            dueDate: new Date(), // Store as ISO string
             status: "execute", // Default status
             isNew: true, // Flag to indicate this is a new task being edited
         };
         setData([...data, newTask]);
     };
+    
 
     // Handle task title change
     const handleTitleChange = (text, id) => {
@@ -68,20 +73,21 @@ const Accordion = ({ title, tasks }) => {
 
             <View style={styles.taskData}>
                 {item.isNew ? (
-                    <TextInput
-                        style={styles.itemText}
-                        value={item.title}
-                        autoFocus={true}
-                        onChangeText={(text) => handleTitleChange(text, item.id)}
-                        onBlur={() => {
-                            dispatch(addTask(item));
-                            // Optionally, you can add a new task here if needed
-                        }}
-                        returnKeyType="done" // Set the return key type
-                        onSubmitEditing={() => {
-                            addNewTask(); // Add a new task
-                        }}
-                    />
+                    <View style={styles.taskData}>
+                        <TextInput
+                            style={styles.itemText}
+                            value={item.title}
+                            autoFocus={true}
+                            onChangeText={(text) => handleTitleChange(text, item.id)}
+                            onBlur={() => {
+                                dispatch(addTask(item));
+                                // Optionally, you can add a new task here if needed
+                            }}
+                            onSubmitEditing={() => {
+                                addNewTask(); // Add a new task
+                            }}
+                        />
+                    </View>
                 ) : (
                     <Pressable style={styles.taskData} onPress={() => setEditTitle(true)}>
                         <TextInput
@@ -124,6 +130,7 @@ const Accordion = ({ title, tasks }) => {
                         onDragEnd={({ data }) => {
                             const updatedData = [...data]; // Create a new array
                             setData(updatedData);
+                            dispatch(reorderTask(updatedData));
                             dispatch(startScrolling());
                         }}
                         initialNumToRender={10}
@@ -207,7 +214,7 @@ const styles = StyleSheet.create({
     itemText: {
         fontSize: 18,
         color: "black",
-        width: "100%"
+        width: "100%",
     },
     icons: {
         width: "25%",
